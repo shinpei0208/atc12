@@ -1,0 +1,19 @@
+\section{System Model and Assumption}
+\label{sec:model}
+
+There are two types of host-device memory copy operations.
+Synchronous memory copy operations block host programs on the CPU until
+copy is done, and could also block themselves on the GPU if other memory
+copy operations or some device programs are still running.
+Asynchronous memory copy operations, on the other hand, block neither
+host programs on the CPU nor device programs on the GPU.
+
+Launching device programs onto the GPU is a non-blocking operation in
+host programs, while copying memory between the host and device is
+either syncmemorycopy operations.
+The host programs that have launched device programs are blocked only
+when they explicitly call synchronization functions.
+
+Multiple device programs are allowed to execute simultaneously on the
+GPU, if they belong to the same context.
+
