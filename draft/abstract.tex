@@ -6,15 +6,33 @@
  a lack of resource management primitives to support GPUs in
  time-sharing general-purpose environments.
 
- In this paper, we present Gdev, a new approach to GPU resource management in the
- operating system (OS), which enables user-space applications and the OS
- itself to use
+ In this paper, we present Gdev, a new approach to GPU resource
+ management in the operating system (OS), which enables user-space
+ applications and the OS itself to use GPUs as first-class computing
+ resources.
+ Gdev employs the runtime library inside the OS, coordinated
+ with the device driver to extend a class of applications that
+ benefit from GPUs. This runtime-unified approach also enhances the
+ memory management and scheduling of GPU applications.
+ Specifically, Gdev supports shared memory for inter-process
+ communication among GPU contexts and data allocation beyond the
+ physical device memory space.
+ Scheduling is also provided to control GPU resource usage with regards
+ to computations and data transmissions.
+ Gdev further enables the GPU to be virtualized into logical GPUs,
+ isolating a certain potion of the GPU resource from other
+ time-sharing users.
 
- We present Gdev, a new approach to GPU resource management, which
- enables the operating system (OS) and user-space applications to use
- GPUs as first-class computing resources.
- Gdev employs compute runtime in the OS, tightly coordinated with the
- device driver to enhance GPU resource management and extend a class of
- applications that can benefit from GPUs.
+ We implement an open-source prototype of Gdev for Linux on NVIDIA
+ GPUs, and identify the advantage and disadvantage of using Gdev,
+ compared to proprietary software and previous work.
+ Our detailed experiments show that Gdev can, for instance, gain about
+ 2x speedups for OS filesystem encryption by using the GPU, improve the
+ makespans of data-flow programs by up to 50\% over proprietary
+ software, and maintain the desired utilization of virtual GPUs within
+ errors of 10\%.
+ %While some performance loss is observed in running a standalone
+ %user-space program, 
+
  
 \end{abstract}
