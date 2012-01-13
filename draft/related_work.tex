@@ -1,0 +1,71 @@
+\section{Related Work}
+\label{related_work}
+
+\textbf{GPU resource management:}
+The GPU is a compute device that essentially requires resource management
+to operate.
+Recently the research community has developed novel approaches GPU
+resource management using OS, runtime library, compiler, and/or
+application solutions.
+
+TimeGraph~\cite{Kato_ATC11} and GERM~\cite{Bautin_MCNC08} are GPU
+command-driven schedulers integrated in the device driver.
+Specifically, TimeGraph provides priority and resource reservation
+support for GPU applications, extended with resource sharing
+protocols~\cite{Kato_RTAS11}, while GERM addresses fair-share
+resource allocation. 
+Gdev supports similar scheduling capabilities, but is based on an
+API-driven model, where a scheduler is invoked only when tasks use
+computing resources on the GPU, eliminating runtime overhead.
+
+PTask~\cite{Rossbach_SOSP11} is an OS abstraction for GPU applications,
+which minimizes data movement between the host and device memory through
+a data-flow programming model, and also addresses scheduling problems.
+CGCM~\cite{Jablin_PLDI11} is a compiler and runtime library solution to
+dynamically and automatically optimize host-device data communication,
+simiar to PTask.
+Gdev does not support such data-flow programming or automatic code
+generation; however, it provides programmers with a first-class IPC
+primitive for shared memory that can reduce data movement overhead when
+communicating with different contexts.
+
+RGEM~\cite{Kato_RTSS11} is a user-space runtime model for real-time
+GPGPU applications.
+It adovocates split transactions for host-device data transmissions
+to bound blocking times, and provides separate queues to demultiplex
+schedulers for data transactions and computations.
+Although Gdev equips a similar design of separate queues, it
+addresses a core challenge of unifying resource management
+and runtime support into the OS in order to overcome fundamental
+user-space limitations.
+
+Comparisons of Gdev and representatives of the above GPU resource
+management approaches are summarized in Table~\ref{tab:related_work}.
+
+\begin{table*}[t]
+ \caption{Comparisons of Gdev and prior GPU resource management
+ approaches.}
+ \label{tab:related_work}
+ \begin{center}
+  {\sf
+  \begin{tabular}{|l|p{12.8cm}|}
+   \hline
+   \hline
+  \end{tabular}
+  }
+ \end{center}
+\vspace{-1em}
+\end{table*}
+
+
+\textbf{GPUs as OS resources:}
+One of significant limitations on current GPU programming frameworks is
+that GPU applications must reside in the user space.
+KGPU~\cite{Sun_SECURITY11_Poster} is a combination of the OS kernel
+module and user-space daemon, which allows the OS to use GPUs by
+upcalling the user-space daemon from the OS to access the GPU.
+On the other hand, Gdev provides OS modules with a set of traditional
+API functions for GPU programming, such as CUDA.
+Hence, legacy GPU application code can run in the OS without any
+modifications and needs not to move back and forth between the user
+space and OS.
