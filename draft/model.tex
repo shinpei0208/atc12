@@ -1,5 +1,107 @@
-\section{System Model and Assumption}
+\section{System Model and Background}
 \label{sec:model}
+
+This paper focuses on a system composed of a GPU and a multi-core CPU.
+The GPU is managed by the OS and some other pieces of system software
+running on the CPU.
+The programming launguage and its runtime subsystem provide programmers
+with a set of API functions to use the GPU.
+Using these API functions, typical GPU applications take the following
+steps: (i) allocate space to the device memory, (ii) move data to the
+allocated space on the device memory, (iii) launch computation on the
+GPU, (iv) move resultant data back to the host memory, and (v) free the
+allocated space from the device memory.
+This is the most well-known execution model for today's GPU
+programming.
+
+As mentioned in Section~\ref{sec:introduction}, while GPUs have received
+considerable attension in many application domains, OS support for GPUs
+has not yet been well investigated.
+What we believe prevents the research community from tackling GPU
+resource management problems is a lack of information on GPU
+architectures.
+However, the Linux open-source community has investigated the details
+of NVIDIA GPU architectures recently~\cite{envytools}, and now we are
+ready to explore GPU resource management.
+In the following, we define our system model based on \textit{Fermi}
+architecture~\cite{Fermi}.
+It should be noted that the concept of Gdev is not limited to Fermi, but
+is applicable to other architectures that are aligned with the following
+model.
+
+\textbf{Command:}
+
+
+\textbf{Channel:}
+
+
+\textbf{Address Space:}
+Each GPU context runs in separate address space through the virtual
+memory management unit.
+The address space is also associated with a hardware channel to the GPU.
+
+\textbf{DMA Engine:}
+
+\textbf{Compute Core:}
+
+The data movement between the host and device memory via direct memory
+access (DMA) and the computation on the GPU are essentially
+non-preemptive, which raises a scheduling challenge.
+
+While traditional microprocessor architectures have opened
+specifications and their design is compatible across many generations
+over decades, 
+
+
+The system is composed of a generic multi-core processor and a graphics
+card.
+We particularly consider CUDA as the underlying programming model, but
+the concept of RGEM is applicable to a wide class of GPGPU
+programming models, such as OpenCL and HMPP.
+The software stack consists of a device driver, a compiler, and a
+runtime engine.
+The compiler generates GPU code and CPU code.
+The CPU code contains a program to launch the GPU code onto the GPU via
+the runtime engine and device driver.
+The GPU code includes at least one kernel, and a set of data used by
+each kernel is uploaded before and downloaded after the kernel execution.
+In particular, we assume that GPGPU programs use the following
+interfaces.
+
+\begin{itemize}
+ \item {\sf MemAlloc(size)} allocates device memory space of {\sf size}
+       bytes, and returns a pointer to it.
+       If there is no enough space left for the requested size, the
+       interface call fails.
+ \item \vspace{-0.5em} {\sf MemFree(ptr)} frees the device memory space
+       pointed to by {\sf ptr}, which must have been allocated through
+       the {\sf MemAlloc} interface.
+ \item \vspace{-0.5em} {\sf MemCopyUpload(dst\_addr, src\_buf, size)}
+       copies data of {\sf size} bytes from a user-space buffer
+       specified by {\sf src\_buf} in the host memory to the device
+       memory at the address specified by {\sf dst\_addr}.
+       This is a blocking call.
+ \item \vspace{-0.5em} {\sf MemCopyDownload(dst\_buf, src\_addr, size)}
+       copies data of {\sf size} bytes from the device memory at the
+       address specified by {\sf src\_addr} to a user-space buffer
+       specified by {\sf dst\_buf} in the host memory.
+       This is a blocking call.
+ \item \vspace{-0.5em} {\sf Launch(kernel, arguments)} launches the
+       kernel program specified by {\sf kernel} with the data parameters
+       specified by {\sf arguments}, which is already loaded as part of
+       the GPU code in the device memory.
+       This is a blocking call.
+\end{itemize}
+
+We assume that GPGPU tasks have fixed priorities, which are by default
+prioritized over other tasks running on the CPU.
+They may or may not execute periodically with deadlines.
+The CPU scheduler in the operating system (OS) dispatches tasks
+based on their priorities, while the device driver dispatches the
+requests to access the GPU when received.
+RGEM is aimed at scheduling these requests before passed to the device
+driver.
+We
 
 There are two types of host-device memory copy operations.
 Synchronous memory copy operations block host programs on the CPU until

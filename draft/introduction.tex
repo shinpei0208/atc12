@@ -41,16 +41,15 @@ the GPU, GPU
 resources available for other users could be very limited.
 GPU schedulers in the state of the arts~\cite{Kato_ATC11,
 Rossbach_SOSP11} support priority and reservation schemes, but users
-are required to specify priorities or reserves by themselves, and
-systems cannot partition GPU resources for multiple independent
-sessions.
+are required to specify priorities or reserves by themselves, and thus
+the system cannot partition GPU resources for independent sessions.
 More essentially, the current system support does not allow
-programmers to share device memory among multiple contexts and the total
-available data size is limited to the device memory size, which is a
-significant constraint in general-purpose domains.
-The current system support for GPUs also leaves the application programming interface
-(API) to the user space, which restricts the availability of GPUs to
-user-space applications.
+programmers to share device memory among multiple contexts, and the
+total available data size is limited to the device memory size, which
+would pose non-trivial constraints in general-purpose domains.
+The current system support for GPUs also leaves the application
+programming interface (API) to the user space, which restricts the
+availability of GPUs to user-space applications.
 In addition, employing the API in the user-space library implies that
 the device driver exposes its resource management primitives to the user
 space through a system call, which allows malicious programs to control
