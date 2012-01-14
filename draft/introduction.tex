@@ -78,16 +78,15 @@ entity, which eliminates the concern about malicious programs attempting
 to access the GPU directly.
 The contribution of Gdev also includes first-class support for
 multi-tasking environments with GPUs.
-Gdev provides shared memory support, which enables programmers to
-explicitly share memory among multiple contexts through the API.
-We also use this shared memory scheme to allow systems to
-allocate data over the device memory size, exploiting implicit data
-eviction and reloading between the host and device memory.
-The last piece of our contribution is a new GPU scheduler, in particular
+Gdev provides shared memory support to allow programmers to
+share device memory among multiple contexts explicitly through the API.
+We also use this shared memory scheme to allow systems to allocate data
+over the device memory size, exploiting implicit data eviction and
+reloading between the host and device memory.
+The final piece of our contribution is a new GPU scheduler, particularly
 to support virtual GPUs under the non-preemptive and burst nature of GPU
 workload.
-We provide an open-source implementation of Gdev, including a device
-driver, runtime library, and API library, as a prototype and
-proof-of-concept.
+As a proof-of-concept, we provide an open-source implementation of Gdev,
+including a device driver, runtime library, and API library.
 
 The rest of this paper is organized as follows.
