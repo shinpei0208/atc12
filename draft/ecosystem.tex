@@ -1,5 +1,5 @@
 \section{Gdev Ecosystem}
-\label{sec:overview}
+\label{sec:ecosystem}
 
 \begin{figure}[t]
  \begin{center}
@@ -35,9 +35,6 @@ The Gdev approach to resource management is API-driven.
 For example, Gdev invokes a scheduler for GPU computations and
 host-device data transmissions upon corresponding API calls.
 
-\subsection{Low-Level API}
-\label{sec:low_level_api}
-
 \begin{table}[t]
  \caption{Representatives of Gdev API.}
  \label{tab:gdev_api}
@@ -57,6 +54,8 @@ host-device data transmissions upon corresponding API calls.
    \hline
    \texttt{gmemcpy\_from\_device} & Copy memory from the device\\
    \hline
+   \texttt{gmemcpy\_in\_device} & Copy memory within the device\\
+   \hline
    \texttt{glaunch}, \texttt{gsync} & Launch/wait computation\\
    \hline
    \texttt{gquery} & Query device information\\
@@ -71,12 +70,12 @@ host-device data transmissions upon corresponding API calls.
 \vspace{-1em}
 \end{table}
 
+\textbf{Low-Level API:}
 Gdev provides a set of low-level API functions for GPU programming as
 shown in Table~\ref{tab:gdev_api}.
 Programmers can use either the Gdev API or a high-level API, such as
-CUDA, internally wrapping the Gdev API.
-In either case, the Gdev API functions are eventually used to access
-the GPU.
+CUDA, which is built on top of the Gdev API.
+In either case, Gdev API is eventually used to access the GPU.
 There are several more API functions supported by Gdev, such as
 asynchronous memory copy functions, but are not focused on in this
 paper.
@@ -89,9 +88,8 @@ it is not a conceptual limitation of Gdev.
 We believe that the Gdev resource management presented in this paper is
 also applicable to those extensions once the API is supported.
 
-\subsection{CUDA Support}
-
-In addition to the low-level API, we provide a limited set of common
+\textbf{CUDA API:}
+In addition to Gdev API, we provide a limited set of common
 CUDA 4.0 Driver API so that legacy CUDA applications can run on top of
 Gdev.
 The supported API functions are limited to those that can be implemented
@@ -122,3 +120,8 @@ time-sharing systems.
 It is different from low-level resource management supported by the
 device driver.
 The device driver just connects the GPU and the host program.
+
+priority
+
+Gdev-managed device (GDEV) virtual address space (VAS), context (CTX),
+and memory (MEM)

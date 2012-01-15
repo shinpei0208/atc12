@@ -1,2 +1,201 @@
 \section{Gdev Memory Management}
 \label{sec:memory_management}
+
+virtual memory.
+
+\subsection{Memory-Copy Optimization}
+\label{sec:memory_copy}
+
+GPU applications must copy memory data back and forth between the device
+and host memory to use the GPU.
+Memory-copy throughput therefore could govern entire application
+performance.
+Although the goal of this paper is to enhance GPU resource management in
+time-sharing systems, the standalone application performance is still an
+important factor to sell the practicality of our solution in the
+real world.
+In this paper, hence, we identify how to optimize memory-copy throught
+for GPU applications, and discuss its implication.
+It should be noted that our problem is different from those considered
+in previous work~\cite{Jablin_PLDI11, Rossbach_SOSP11} in that we are
+looking into a basic single instance of memory-copy transaction, while
+the previous work addressed more applied situations where multiple
+contexts compete for memory-copy transaction.
+
+First of all, we have found that the memory-copy API functions provided
+by proprietary software~\cite{CUDA40} are well-optimized for standalone
+operations.
+In the following, hence, we disclose how to realize this optimization.
+
+\textbf{Split Transaction:}
+In order to copy data between the device and host memory, the data
+typically need to be copied twice, unless users directly allocate
+buffers to the host I/O memory. 
+For example, when uploading user buffers from the host to the device
+memory, the data are first copied from the main memory to intermediate
+\textit{bounce} buffers in the I/O memory accessible to the GPU, and
+then copied to the device memory.
+To optimize this two-step memor-copy operation, we split each operation
+by a fixed size of chunks, which play a role of ping-pong buffers.
+While some chunk is copied between the main and I/O memory, the prior
+chunk can be copied between the I/O and device memory.
+In this way, only the first and last chunks are copied alone, while
+others are overlapped with neighbors, reducing the makespan almost half.
+This split transaction also needs only a small size of bounce buffers
+equal to the chunk size, reducing the usage of the host I/O memory
+significantly.
+In Gdev, the chunk size is configurable.
+The same idea can also be applied to all types of DMA engines desribed in
+Section~\ref{sec:model}.
+
+\textbf{Direct I/O Access:}
+The split transaction is effective for a large size of data.
+For a small size of data, however, the use of DMA engines incurs
+non-trivial overhead by itself.
+Hence, we also employ a method to directly map device memory space onto
+host I/O memory space and read/write data sequentially rather than
+configure DMA engines and send/receive data in burst mode.
+We have found that such a direct I/O access method is much faster than
+using DMA engines for a small size of data.
+In our experiment presented in Section~\ref{sec:evaluation}, we will
+show a boundary on the data size that inverts the surperiority of I/O
+access and DMA, together with the best chunk size, to achieve
+memory-copy optimization.
+
+\subsection{Shared Memory Support}
+\label{sec:shared_memory}
+
+The current GPU programming model does not support IPC.
+For example, data communication among contexts incurs significant
+overhead by copying data back and forth between host-memory and
+device-memory buffers.
+Currently, an OS dataflow abstraction~\cite{Rossbach_SOSP11} is a useful
+tool to minimize such data movement costs; however users are required to
+use a dataflow programming model and understand that optimization is
+applied implicitly by the OS at runtime.
+It would be nice if users could manage data communiation among contexts
+easily using a familiar method, such as a POSIX IPC mechanism.
+
+Gdev supports device shared memory and provides a set of API
+functions based on the POSIX specification, as listed in
+Table~\ref{tab:gdev_api}.
+Specifically, \texttt{gshmget}, \texttt{gshmat}, \texttt{gshmdt}, and
+\texttt{gshmctl} respectively correspond to POSIX \texttt{shmget},
+\texttt{shmat}, \texttt{shmdt}, and \texttt{shmctl}. 
+We have also added \texttt{cuShmGet}, \texttt{cuShmAt},
+\texttt{cuShmDt}, and \texttt{cuShmCtl} to our CUDA API 
+implementation, which correspondingly call the Gdev shared memory
+functions, so that users can easily integrate shared memory for legacy
+CUDA applications.
+
+Our shared memory design is straightforward, though its implementation
+is challenging.
+Upon the first call to \texttt{gshmget}, new space is allocated to the
+device memory, similar to \texttt{gmalloc}, and it holds an identifier
+to this memory object. 
+After the first call, however, Gdev just returns the identifier to the
+caller.
+The allocated space is mapped onto the context virtual address space
+when \texttt{gshmat} is called.
+Address mapping is done by setting the page table so that the virtual
+addresses point to the shared physical memory space.
+The allocated space can also be unmapped by \texttt{gshmdt} and freed by
+\texttt{gshmctl}. 
+Gdev counts the number of users for each shared memory space,
+and frees the shared memory when the nubmer of references becomes zero.
+Hence the call to \texttt{gshmctl} is optional.
+If the shared memory needs to be accessed exclusively, the host program
+must take care of it by itself using traditional semaphore mechanisms.
+
+We believe that our shared memory functions can be easily integrated
+into today's GPU programing model.
+For example, legacy CUDA applications can use shared memory by just
+replacing \texttt{cuMemAlloc} with \texttt{cuShmGet} and
+\texttt{cuShmAt}, and \texttt{cuMemFree} with \texttt{cuShmDt}
+respectively.
+
+\subsection{Memory Swapping}
+\label{sec:memory_swapping}
+
+The proprietary software in Linux~\cite{BLOB,CUDA40} fail to allocate
+device memory if the total demands exeed the physical memory, though
+that in Windows can somehow allocate memory larger than the physical
+memory according to PTask~\cite{Rossbach_SOSP11}. 
+In either case, however, it is not well studied how to swap device
+memory and speed up its operation.
+
+Gdev uses shared memory to support device memory swapping.
+When a memory allocation request fails due to a short of free memory
+space, Gdev seeks memory objects whose allocated size is greater than
+the requested size, and pick one owned by the lowest-priority context,
+where ties are broken arbitrarily.
+Gdev here ensures not to select a memory object from the caller context
+itself.
+Once a victim memory object is selected, it is shared with the caller
+context, and behaves as an \textit{implicit} shared memory object.
+%The allocated space is never freed until unreferenced by all associated
+%contexts.
+Unlike an explicit shared memory object presented in
+Section~\ref{sec:shared_memory}, however, the implicit shared memory
+object needs to evict data when other contexts are accessing it and
+retrieve the evicted data later when the corresponding context is
+resumed.
+Thanks to the Gdev API design, we know exactly when contexts could
+access the shared memory: it could be accessed when either a familiy of
+\texttt{gmemcpy*} or \texttt{glaunch} is called.
+They however need to be handled in a different manner:
+\begin{itemize}
+ \vspace{-0.25em}
+ \item \texttt{gmemcpy*} accesses a specific range of address space
+       given by the function arguments.
+       Hence, we need to evict and retrieve data related to this range.
+ \vspace{-0.5em}
+ \item \texttt{glaunch}, on the other hand, does not tell which address
+       range could be accessed when it is called, especially due to
+       dynamically allocated memory space.
+       Hence, we need to evict and retrieve data associated with all
+       memory objects owned by the corresponding context.
+ \vspace{-0.25em}
+\end{itemize}
+
+We allocate swap buffers to the host main memory to save the evicted
+data.
+It uses \texttt{gmemcpy\_from\_device} and \texttt{gmemcpy\_to\_device}
+to evict and retrieve data.
+These memory swapping procedures are not visible to application programs.
+It should be noted that swapping does not occur when downloading data
+from the device memory.
+Even if the data are evicted, we can copy the data from the swap buffer
+directly.
+
+\textbf{Reducing Latency:}
+The latency posed due to memory swapping could be non-trivial if the
+corresponding data size is large.
+Given a memory copy operation within the device memory faster than
+that between the device and host memory by an order of ten, Gdev
+reserves a certain amount of device memory space to use as temporal swap
+space, and temporarily evicts data to this device swap space, as far as
+the data fit the space, in order to reduce the swapping latency.
+However, if the swap space is not large enough for the data or prior
+data are still evicted there, the data need to be evicted to the host
+memory.
+The temporarily-evicted data in the device swap space are eventually
+evicted to the host mainly memory after a while to free the swap space
+for other contexts.
+However, Gdev tries to hide the latency of this second data eviction by
+overlapping it with the computation launched by the context itself.
+To do so, it creates special GPU context to call
+\texttt{gmemcpy\_from\_device}, because the compute and DMA units can be
+used by different CPU contexts simultaneously, as explained in
+Section~\ref{sec:model}.
+This approach is reasonable, since some computation is likely following
+the data eviction, \textit{i.e.}, \texttt{glaunch} will apparently
+launch some computation, and \texttt{gmemcpy\_to\_device} should also be
+called prior to \texttt{glaunch}.
+
+The evicted data, if exist, need to be retrieved when \texttt{glaunch}
+is called for the associated GPU context after evicting the current data
+of some other context sharing the memory space.
+If the evicted data still exist in the device swap space, they can be
+retrieved quickly.
+Else, we have to retrieve them from the host main memory.

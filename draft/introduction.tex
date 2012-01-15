@@ -19,7 +19,7 @@ speedups for software routers~\cite{Han_SIGCOMM10}, 20x speedups for
 encrypted networks~\cite{Jang_NSDI11}, and 15x speedups for motion
 planning in autonomous vehicles~\cite{McNaughton_ICRA11}.
 Such a rapid growth of general-purpose computing on GPUs,
-a.k.a., \textit{GPGPU}, is encouraged by recent advances in GPU
+\textit{a.k.a.}, GPGPU, is encouraged by recent advances in GPU
 programming languages, such as CUDA~\cite{CUDA40}.
 % and OpenCL~\cite{OpenCL12}.
 
@@ -48,13 +48,13 @@ More essentially, the current programming framework does not allow
 programmers to share device memory among multiple contexts, and the
 total available data size is also limited to the device memory size,
 which would pose non-trivial constraints in general-purpose domains.
-The current OS and system support for GPUs also leaves the application
-programming interface (API) to the user space, which restricts the
-availability of GPUs to user-space applications.
+The current OS and system support for GPUs also leaves the
+application programming interface (API) to the user space, which
+restricts the availability of GPUs to user-space applications.
 In addition, employing the API in the user-space library implies that
 the device driver exposes its resource management primitives to the user
 space through a system call, which allows malicious programs to control
-the GPU through this system call. 
+GPUs through this system call. 
 As a matter of fact, non-privileged user-space programs can directly
 allocate memory and launch computation on NVIDIA GPUs using
 \texttt{ioctl} calls in Linux.
@@ -63,8 +63,8 @@ Hence, the API should also be protected by the OS.
 This paper presents \textbf{Gdev}, a new GPU ecosystem that integrates
 runtime support into the OS to allow a wide class of user-space
 applications and the OS itself to use GPUs in a reliable manner.
-Specifically, Gdev employs a set of low-level API functions for GPUs
-in the OS.
+Specifically, Gdev employs a set of low-level API functions for GPUs in
+the OS.
 While OS modules can directly call these functions, user-space
 programs can also call them through a system call, such as
 \texttt{ioctl()}.
@@ -74,7 +74,7 @@ both in the user space and OS.
 This runtime-unified OS approach forces all GPU applications running in
 the same system to be managed by the identical resource management
 entity, which eliminates the concern about malicious programs attempting
-to access the GPU directly.
+to access GPUs directly.
 The contribution of Gdev also includes first-class support for
 multi-tasking environments sharing GPUs.
 Specifically, Gdev supports shared memory to allow programmers to
@@ -84,19 +84,19 @@ over the device memory size, exploiting implicit data eviction and
 reloading between the host and device memory.
 Gdev further contributes to GPU scheduling, particularly
 to support virtual GPUs under the non-preemptive and burst nature of GPU
-workload.
+workloads.
 As a proof-of-concept, we provide an open-source implementation of Gdev,
 including a device driver, runtime library, and API library.
 To summarize, this paper makes the following contributions:
 \begin{itemize}
- \vspace{-0.5em}
+ \vspace{-0.25em}
  \item Identifies the advantage and disadvantage of GPU runtime support
-       in the OS.
+       integrated in the OS.
  \vspace{-0.5em}
  \item Enables the OS to use GPUs for computation.
  \vspace{-0.5em}
  \item Makes GPUs as first-class computing resources in time-sharing
-       systems, \textit{i.e.}, support for shared memory, data swapping,
+       systems -- support for shared memory, memory swapping,
        and virtual GPUs, in addition to device memory management and GPU
        scheduling.
  \vspace{-0.5em}
@@ -106,7 +106,15 @@ To summarize, this paper makes the following contributions:
  \vspace{-0.5em}
  \item Demonstrates the capabilities of Gdev using well-known real-world
        benchmarks and applications.
- \vspace{-0.5em}
+ \vspace{-0.25em}
 \end{itemize}
 
 The rest of this paper is organized as follows.
+The background and the system model behind this paper are described in
+Section~\ref{sec:model}.
+Section~\ref{sec:ecosystem} presents an overview of the Gdev ecosystem.
+Section~\ref{sec:memory_management} and \ref{sec:scheduling} provide the
+details of Gdev memory management and scheduling.
+Section~\ref{sec:implementation} describes our prototype implementation,
+and Section~\ref{sec:evaluation} shows its capabilities.
+Section~\ref{sec:conclusion} concludes this paper.

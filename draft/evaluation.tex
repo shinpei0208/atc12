@@ -1,2 +1,39 @@
 \section{Experimental Evaluation}
 \label{sec:evaluation}
+
+We evaluate our Gdev prototype, using the Rodinia
+benchmarks~\cite{Che_IISWC09}, GPU-accelerated eCryptfs encrypted
+filesystem from KGPU~\cite{Sun_SECURITY11_Poster}, FAST database
+search~\cite{Kim_SIGMOD10}, and some dataflow
+microbenchmarks from PTask~\cite{Rossbach_SOSP11}.
+We disclose that the basic performance of our prototype is practical
+even compared to proprietary software, and also demonstrate that Gdev
+provides significant benefits for GPU applications in time-sharing
+systems.
+
+Our experiments are conducted with the Linux kernel 2.6.38 on NVIDIA
+GeForce~GTX~480 graphics card and Intel Core~2~Extreme QX9650 processor.
+GPU device programs are compiled by NVCC~\cite{CUDA40} and CPU host
+programs are compiled by gcc 4.4.6.
+
+\subsection{Basic Performance}
+
+We first investigate the basic performance of standalone applications achieved
+by our Gdev prototype compared to NVIDIA's proprietary driver and
+library~\cite{BLOB,CUDA40}, in order to argue that the rest of our
+evaluation is practical in the real world. 
+To do so, we need to determine what resource parameters maximize
+performance for our Gdev prototype.
+Figure
+
+\subsection{Scheduler Overhead}
+
+We next compare overheads of different scheduler designs among Gdev
+(API-driven), TimeGraph~\cite{Kato_ATC11} (command-driven), and
+RGEM~\cite{Kato_RTSS11} (user-space).
+
+\subsection{OS Applications with GPUs}
+
+\subsection{Shared Memory Effectiveness}
+
+\subsection{Virtual GPUs Performance}

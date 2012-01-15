@@ -1,17 +1,18 @@
 \section{Prototype Implementation}
-\label{sec:prototype}
+\label{sec:implementation}
 
-Our prototype implementation is available for Linux on NVIDIA Fermi GPUs.
-It is fully open-source, and does not depend on proprietary software
-except for compilers.
-Our GPU device driver implementation is based on what we have been
-developing in collaboration with PathScale Corporation~\cite{ENZO}.
-The OS runtime and the CUDA Driver API library are newly designed and
-implemented.
-Our prototype implementation is still partly experimental, but we
-believe that it is useful to facilitate future research on GPU
-resource management, given that such open-source software for GPUs has
-not appeared yet.
+Our prototype implementation is fully open-source and available for the
+Linux kernel 2.6.32 or later, without any modifications to the
+underlying kernel, on NVIDIA Fermi GPUs.
+It does not depend on proprietary software except for compilers.
+Our device driver implementation is particularly based on what we have
+been developing in collaboration with PathScale
+Corporation~\cite{ENZO}.
+The OS runtime and the CUDA Driver API library, on the other hand, are
+newly implemented.
+Our Gdev prototype is still partly experimental, but it would contribute
+to future research on GPU resource management, given that such
+open-source software for GPUs has not appeared yet.
 
 \textbf{Interface:}
 Gdev is a Linux kernel module (a character device driver) composing the
@@ -43,17 +44,24 @@ We plan to integrate the configuration of priority and reserve for
 each single task into \texttt{/proc} based on a TimeGraph
 approach~\cite{Kato_ATC11} in future work.
 
+Gdev creates the same number of character device files as virtual GPUs,
+\textit{i.e.}, /dev/\{gdev0,gdev1,...\}.
+Users can simply open one of these device files using Gdev API or CUDA
+API, and it behaves as if it were a physical GPU.
+
 \textbf{Resource Parameters:}
-The performance of Gdev is affected by resource parameters, such as the
-page size for virtual memory, period for virtual GPU credits, chunk size
-for memory-copy, and boundary between I/O access and DMA.
-We use 4KB of page size as Linux uses this size by default for host
-memoroy management.
+The performance of Gdev is governed by resource parameters, such as the
+page size for virtual memory, temporal swap size, period for virtual GPU
+credits, chunk size for memory-copy, and boundary between I/O access and
+DMA.
+We use a page size of 4KB, as the Linux kernel uses the same page size
+for host virtual memory by default.
+The temporal swap size is experimentally configured to be 10\% of the
+physical device memory.
 We also respect Xen's default setup for the period of virtual GPU
 credits, \textit{i.e.}, we set it 30ms.
-The remaining parameters are pretty GPU-specific.
-They are determined through experiments as demonstrated in
-Section~\ref{sec:evaluation}.
+The remaining resource parameters will be determined through the experiments as
+demonstrated in Section~\ref{sec:evaluation}.
 
 \textbf{Portability:}
 Our implementation is still aligned with Direct Rendering Infrastracture

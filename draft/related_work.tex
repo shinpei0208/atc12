@@ -10,29 +10,28 @@ application solutions.
 
 TimeGraph~\cite{Kato_ATC11} and GERM~\cite{Bautin_MCNC08} are GPU
 command-driven schedulers integrated in the device driver.
-Specifically, TimeGraph provides priority and resource reservation
-support for GPU applications, extended with resource sharing
-protocols~\cite{Kato_RTAS11}, while GERM addresses fair-share
-resource allocation. 
-Gdev supports similar scheduling capabilities, but is based on an
-API-driven model, where a scheduler is invoked only when tasks use
-computing resources on the GPU, eliminating runtime overhead.
-A command-driven scheduler also fails to control GPU resource usage
-precisely, since it cannot recognize what command sequences would launch
-computations on the GPU, and hence it accounts for all commands even
-though not using GPU computing resources.
+While TimeGraph provides priority and isolation schemes for
+GPU applications, later extended with resource sharing
+schemes~\cite{Kato_RTAS11}, GERM enhances fair-share GPU resource
+allocation.
+The Gdev scheduler also respects priority, isolation, and fairness
+similar to TimeGraph and GERM, but adopts an API-driven scheduler model,
+which could reduce a number of scheduler invocations at runtime.
+The API-driven scheduler model is also more reliable to control GPU
+resource usage, since it accounts only when the GPU is used
+for computation and data transmission, wheres the command-driven
+scheduler model assumes all commands to consume GPU resources.
 
 PTask~\cite{Rossbach_SOSP11} is an OS abstraction for GPU applications
 to minimize data movement between the host and device memory through
 a data-flow programming model.
 It also addresses scheduling problems.
 CGCM~\cite{Jablin_PLDI11} is a compiler and runtime library solution to
-dynamically and automatically optimize host-device data communication,
-simiar to PTask.
+dynamically and automatically optimize host-device data communication.
 Gdev does not support such data-flow programming or automatic code
 generation; however, it provides programmers with a first-class IPC
 primitive for shared memory that can reduce data movement overhead in
-communicating with different contexts.
+data communication among different contexts.
 
 RGEM~\cite{Kato_RTSS11} is a user-space runtime model for real-time
 GPGPU applications.
@@ -47,12 +46,14 @@ user-space limitations.
 In addition to the above differences, Gdev provides virtual GPUs that
 enable users to view a physical GPU as multiple logical GPUs for
 resource usage isolation.
-Furthermore, our design and implementation of Gdev newly developed in
-this paper are self-contained, allowing the OS to fully control and even
-use GPUs as first-class computing resources, whereas the previous work
-more or less depend on the proprietary software or existing graphics
-drivers, which forces their solutions, if not concepts, to partly adhere
-to user-space runtimes.
+None of previous work also distinguishes compute and memory bandwidth,
+which could prevent GPU resources to be fully utilized in
+reservation strategies.
+Furthermore, our Gdev prototype design and implementation are
+self-contained, allowing the OS to fully control and even use the GPU as
+first-class resources, whereas previous work more or less 
+depend on proprietary software or existing drivers, which could force their
+solutions, if not concepts, to partly adhere to user-space runtimes.
 
 \begin{comment}
 Comparisons of Gdev and representatives of the above GPU resource
