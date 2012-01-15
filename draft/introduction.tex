@@ -35,19 +35,20 @@ However, these pieces of OS support still limit a class of applications
 that can use GPUs due to a lack of first-class resource management
 primitives, such as virtual memory management, inter-process
 communication (IPC), and time-and-space partitioning.
-On a time-sharing server where multiple users are logged in their own
-sessions, for instance, if one executes a high-workload program using
-the GPU, GPU 
-resources available for other users could be very limited.
+
+On a time-sharing server where multiple independent users are logged in,
+for instance, if one executes a high-workload GPGPU program, GPU
+resources available for remaining users could be very limited. 
 GPU schedulers in the state of the arts~\cite{Kato_ATC11,
-Rossbach_SOSP11} support priority and reservation schemes, but users
-are required to specify priorities or reserves by themselves, and thus
-the system cannot partition GPU resources for independent sessions.
-More essentially, the current system support does not allow
+Rossbach_SOSP11} provide priority schemes for GPUs, but users
+are required to specify priorities and other parameters by themselves.
+The system thus cannot partition GPU resources for independent sessions.
+
+More essentially, the current programming framework does not allow
 programmers to share device memory among multiple contexts, and the
-total available data size is limited to the device memory size, which
-would pose non-trivial constraints in general-purpose domains.
-The current system support for GPUs also leaves the application
+total available data size is also limited to the device memory size,
+which would pose non-trivial constraints in general-purpose domains.
+The current OS and system support for GPUs also leaves the application
 programming interface (API) to the user space, which restricts the
 availability of GPUs to user-space applications.
 In addition, employing the API in the user-space library implies that
@@ -60,32 +61,52 @@ allocate memory and launch computation on NVIDIA GPUs using
 Hence, the API should also be protected by the OS.
 
 This paper presents \textbf{Gdev}, a new GPU ecosystem that integrates
-runtime support into the OS to enable a wide class of user-space
+runtime support into the OS to allow a wide class of user-space
 applications and the OS itself to use GPUs in a reliable manner.
 Specifically, Gdev employs a set of low-level API functions for GPUs
 in the OS.
 While OS modules can directly call these functions, user-space
-programs can also call them through a system call, such as POSIX
+programs can also call them through a system call, such as
 \texttt{ioctl()}.
-We also provide CUDA 4.0 API~\cite{CUDA40}\footnote{We have
-implemented a limited set of commonly-used CUDA 4.0 API functions but
-not yet fully covered CUDA 4.0.}, wrapping Gdev API, so that legacy CUDA
-applications can run on top of Gdev both in the user space and OS.
+We also provide an implementation of CUDA 4.0 API~\cite{CUDA40},
+wrapping Gdev API, so that legacy CUDA applications can run with Gdev
+both in the user space and OS. 
 This runtime-unified OS approach forces all GPU applications running in
 the same system to be managed by the identical resource management
 entity, which eliminates the concern about malicious programs attempting
 to access the GPU directly.
 The contribution of Gdev also includes first-class support for
-multi-tasking environments with GPUs.
-Gdev provides shared memory support to allow programmers to
+multi-tasking environments sharing GPUs.
+Specifically, Gdev supports shared memory to allow programmers to
 share device memory among multiple contexts explicitly through the API.
 We also use this shared memory scheme to allow systems to allocate data
 over the device memory size, exploiting implicit data eviction and
 reloading between the host and device memory.
-The final piece of our contribution is a new GPU scheduler, particularly
+Gdev further contributes to GPU scheduling, particularly
 to support virtual GPUs under the non-preemptive and burst nature of GPU
 workload.
 As a proof-of-concept, we provide an open-source implementation of Gdev,
 including a device driver, runtime library, and API library.
+To summarize, this paper makes the following contributions:
+\begin{itemize}
+ \vspace{-0.5em}
+ \item Identifies the advantage and disadvantage of GPU runtime support
+       in the OS.
+ \vspace{-0.5em}
+ \item Enables the OS to use GPUs for computation.
+ \vspace{-0.5em}
+ \item Makes GPUs as first-class computing resources in time-sharing
+       systems, \textit{i.e.}, support for shared memory, data swapping,
+       and virtual GPUs, in addition to device memory management and GPU
+       scheduling.
+ \vspace{-0.5em}
+ \item Provides open-source implementations of the GPU device driver,
+       runtime/API libraries, utility tools, and Gdev resource
+       management components.
+ \vspace{-0.5em}
+ \item Demonstrates the capabilities of Gdev using well-known real-world
+       benchmarks and applications.
+ \vspace{-0.5em}
+\end{itemize}
 
 The rest of this paper is organized as follows.

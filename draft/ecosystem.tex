@@ -4,7 +4,7 @@
 \begin{figure}[t]
  \begin{center}
   %\includegraphics[width=\hsize]{eps/gdev.eps}\\
-  \caption{Outline of the Gdev ecosystem.}
+  \caption{Logical view of Gdev ecosystem.}
   \label{fig:gdev}
  \end{center}
  \vspace{-1em}
@@ -31,8 +31,9 @@ OS applications can directly access this runtime.
 User-space applications can also use it through the wrapper library provided by
 Gdev, which simply relays API calls to the OS runtime through the system
 call.
-The GPU resource management of Gdev is API-driven; specifically, Gdev
-manages GPU resources upon corresponding API calls.
+The Gdev approach to resource management is API-driven.
+For example, Gdev invokes a scheduler for GPU computations and
+host-device data transmissions upon corresponding API calls.
 
 \subsection{Low-Level API}
 \label{sec:low_level_api}
@@ -95,12 +96,29 @@ CUDA 4.0 Driver API so that legacy CUDA applications can run on top of
 Gdev.
 The supported API functions are limited to those that can be implemented
 by the current version of Gdev API, but many legacy CUDA applications
-can perform with such limitations, as we will demonstrate in
-Section~\ref{evaluation}.
+can perform with such a limited set of API, as we will demonstrate in
+Section~\ref{sec:evaluation}.
 
-Our runtime library parses the CUBIN format file.
+Gdev assumes that programs are compiled by NVIDIA CUDA Compiler
+(NVCC)~\cite{CUDA40}.
+Since CUDA Driver API separates device binary and host binary, Gdev only
+needs to parse the device binary to aquire static information, such
+as the code size, stack size, shared memory size, local memory size, and
+parameters size, when it is loaded by the host binary.
+Global memory is also dynamically allocated by the host binary at
+runtime.
+It should be noted that CUDA also provides a different type of API,
+called Runtime API, which is more high-level than Driver API.
+Although the current implementation of Gdev does not support CUDA
+Runtime API by itself, we could leverage Ocelot~\cite{Diamos_PACT10} to
+translate Runtime API to Driver API, in order to run CUDA programs
+written in Runtime API.
 
-\subsection{Portability}
+\subsection{Resource Management}
 
-\subsection{Open-Source Implementation}
-
+Gdev provides memory management and scheduling for the GPU to allow
+multiple users and programs to share the GPU concurrently in
+time-sharing systems.
+It is different from low-level resource management supported by the
+device driver.
+The device driver just connects the GPU and the host program.
