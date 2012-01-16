@@ -1,7 +1,17 @@
-\section{Gdev Memory Management}
+\section{Device Memory Management}
 \label{sec:memory_management}
 
-virtual memory.
+Gdev manages the device memory using the virtual memory management unit
+supported by the GPU.
+The page table assigned for each GPU context is placed in the device
+memory but not in the host memory to reduce paging latency.
+For memory-copy management, Gdev configures DMA engines to write a
+sequential value to the specified memory space for every DMA transaction
+so that Gdev can wait for DMA operations to be done to synchronize
+GPU contexts by polling the corresponding sequencial value.
+In addition to these generic pieces of device memory management, Gdev
+identifies how to increase memory-copy throughput, and support shared
+memory and memory swapping for the GPU.
 
 \subsection{Memory-Copy Optimization}
 \label{sec:memory_copy}
@@ -107,17 +117,16 @@ Hence the call to \texttt{gshmctl} is optional.
 If the shared memory needs to be accessed exclusively, the host program
 must take care of it by itself using traditional semaphore mechanisms.
 
-We believe that our shared memory functions can be easily integrated
-into today's GPU programing model.
-For example, legacy CUDA applications can use shared memory by just
-replacing \texttt{cuMemAlloc} with \texttt{cuShmGet} and
-\texttt{cuShmAt}, and \texttt{cuMemFree} with \texttt{cuShmDt}
-respectively.
+We believe that our shared memory scheme can be easily integrated into
+GPU programing.
+For example, legacy CUDA applications can use our shared memory scheme
+by replacing \texttt{cuMemAlloc} with \texttt{cuShmGet} and
+\texttt{cuShmAt}, and \texttt{cuMemFree} with \texttt{cuShmDt}.
 
 \subsection{Memory Swapping}
 \label{sec:memory_swapping}
 
-The proprietary software in Linux~\cite{BLOB,CUDA40} fail to allocate
+Proprietary software in Linux~\cite{BLOB,CUDA40} fails to allocate
 device memory if the total demands exeed the physical memory, though
 that in Windows can somehow allocate memory larger than the physical
 memory according to PTask~\cite{Rossbach_SOSP11}. 
@@ -127,7 +136,7 @@ memory and speed up its operation.
 Gdev uses shared memory to support device memory swapping.
 When a memory allocation request fails due to a short of free memory
 space, Gdev seeks memory objects whose allocated size is greater than
-the requested size, and pick one owned by the lowest-priority context,
+the requested size, and selects one owned by a low-priority context,
 where ties are broken arbitrarily.
 Gdev here ensures not to select a memory object from the caller context
 itself.
@@ -165,8 +174,8 @@ to evict and retrieve data.
 These memory swapping procedures are not visible to application programs.
 It should be noted that swapping does not occur when downloading data
 from the device memory.
-Even if the data are evicted, we can copy the data from the swap buffer
-directly.
+Even if the data are evicted, we can copy the data from the host swap
+buffer directly.
 
 \textbf{Reducing Latency:}
 The latency posed due to memory swapping could be non-trivial if the
@@ -198,4 +207,4 @@ is called for the associated GPU context after evicting the current data
 of some other context sharing the memory space.
 If the evicted data still exist in the device swap space, they can be
 retrieved quickly.
-Else, we have to retrieve them from the host main memory.
+Else, Gdev retrieves them from the host main memory.

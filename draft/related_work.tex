@@ -14,7 +14,7 @@ While TimeGraph provides priority and isolation schemes for
 GPU applications, later extended with resource sharing
 schemes~\cite{Kato_RTAS11}, GERM enhances fair-share GPU resource
 allocation.
-The Gdev scheduler also respects priority, isolation, and fairness
+The Gdev scheduler also respects priorities, isolation, and fairness
 similar to TimeGraph and GERM, but adopts an API-driven scheduler model,
 which could reduce a number of scheduler invocations at runtime.
 The API-driven scheduler model is also more reliable to control GPU
@@ -23,9 +23,9 @@ for computation and data transmission, wheres the command-driven
 scheduler model assumes all commands to consume GPU resources.
 
 PTask~\cite{Rossbach_SOSP11} is an OS abstraction for GPU applications
-to minimize data movement between the host and device memory through
-a data-flow programming model.
-It also addresses scheduling problems.
+to minimize data communication between the host and device memory
+through a data-flow programming model.
+It also addresses a scheduling problem.
 CGCM~\cite{Jablin_PLDI11} is a compiler and runtime library solution to
 dynamically and automatically optimize host-device data communication.
 Gdev does not support such data-flow programming or automatic code

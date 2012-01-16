@@ -39,16 +39,16 @@ host-device data transmissions upon corresponding API calls.
  \caption{Representatives of Gdev API.}
  \label{tab:gdev_api}
  \begin{center}
-  {\footnotesize
+  {\small
   \begin{tabular}{|l|l|}
    \hline
    \textbf{API name} & \textbf{Description}\\
    \hline
-   \texttt{gopen}, \texttt{gclose} & Open/close the device\\
+   \texttt{gopen}/\texttt{gclose} & Open/close the device\\
    \hline
-   \texttt{gmalloc}, \texttt{gfree} & Allocate/free device memory\\
+   \texttt{gmalloc}/\texttt{gfree} & Allocate/free device memory\\
    \hline
-   \texttt{gmalloc\_dma}, \texttt{gfree\_dma} & Allocate/free host I/O memory\\
+   \texttt{gmalloc\_io}/\texttt{gfree\_io} & Allocate/free host I/O memory\\
    \hline
    \texttt{gmemcpy\_to\_device} & Copy memory to the device\\
    \hline
@@ -56,13 +56,13 @@ host-device data transmissions upon corresponding API calls.
    \hline
    \texttt{gmemcpy\_in\_device} & Copy memory within the device\\
    \hline
-   \texttt{glaunch}, \texttt{gsync} & Launch/wait computation\\
+   \texttt{glaunch}/\texttt{gsync} & Launch/wait computation\\
    \hline
    \texttt{gquery} & Query device information\\
    \hline
-   \texttt{gshmget}, \texttt{gshmctl} & Manage shared device memory\\
+   \texttt{gshmget}/\texttt{gshmctl} & Manage shared device memory\\
    \hline
-   \texttt{gshmat}, \texttt{gshmdt} & Share/unshare device memory\\
+   \texttt{gshmat}/\texttt{gshmdt} & Share/unshare device memory\\
    \hline
   \end{tabular}
   }
@@ -88,10 +88,9 @@ it is not a conceptual limitation of Gdev.
 We believe that the Gdev resource management presented in this paper is
 also applicable to those extensions once the API is supported.
 
-\textbf{CUDA API:}
-In addition to Gdev API, we provide a limited set of common
-CUDA 4.0 Driver API so that legacy CUDA applications can run on top of
-Gdev.
+\textbf{CUDA Support:}
+In addition to Gdev API, we provide CUDA 4.0 Driver API~\cite{CUDA40}
+support so that legacy CUDA applications can run on top of Gdev.
 The supported API functions are limited to those that can be implemented
 by the current version of Gdev API, but many legacy CUDA applications
 can perform with such a limited set of API, as we will demonstrate in

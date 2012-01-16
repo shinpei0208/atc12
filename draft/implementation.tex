@@ -51,21 +51,22 @@ API, and it behaves as if it were a physical GPU.
 
 \textbf{Resource Parameters:}
 The performance of Gdev is governed by resource parameters, such as the
-page size for virtual memory, temporal swap size, period for virtual GPU
-credits, chunk size for memory-copy, and boundary between I/O access and
-DMA.
+page size for virtual memory, temporal swap size, waiting time for the
+Band scheduler, period for virtual GPU budgets, chunk size
+for memory-copy, and boundary between I/O access and DMA.
 We use a page size of 4KB, as the Linux kernel uses the same page size
 for host virtual memory by default.
-The temporal swap size is experimentally configured to be 10\% of the
-physical device memory.
-We also respect Xen's default setup for the period of virtual GPU
-credits, \textit{i.e.}, we set it 30ms.
-The remaining resource parameters will be determined through the experiments as
+The swap size is statically set 10\% of the physical device memory.
+The waiting time for the Band scheduler is also statically set 500
+microseconds.
+For the period of virtual GPU budgets, we respect Xen's default setup,
+\textit{i.e.}, we set it 30ms.
+The rest of resource parameters will be determined through the experiments as
 demonstrated in Section~\ref{sec:evaluation}.
 
 \textbf{Portability:}
 Our implementation is still aligned with Direct Rendering Infrastracture
-(DRI)~\cite{DRI}, a Linux framework for graphics rendering with the GPU.
+(DRI)~\cite{DRI} -- a Linux framework for graphics rendering with the GPU.
 Prior work on GPU scheduling, such as TimeGraph~\cite{Kato_ATC11} and
 GERM~\cite{Bautin_MCNC08}, are also based on DRI.
 Therefore, a part of Gdev functionality, such as virtual GPUs and shared
