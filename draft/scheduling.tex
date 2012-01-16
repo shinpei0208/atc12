@@ -132,7 +132,7 @@ workloads are non-preemptive and bursting.
   \caption{Pseudo-code of the Band scheduler.}
   \label{fig:band}
  \end{center}
- \vspace{-2em}
+ \vspace{-1.5em}
 \end{figure}
 
 To overcome the virtual GPU scheduling problem, we propose a
@@ -156,22 +156,26 @@ First, the Band scheduler lowers the priority of the virtual GPU when
 its budget (credit) is exhausted and its utilization of the GPU is
 exceeding the assigned bandwidth, while the Credit scheduler always
 lowers the priority when the budget is exhausted.
+
 The second modification to the Credit scheduler is that the Band
 scheduler waits for a certain amount of time specified by the system
-designer, if the actual GPU utilization of the next virtual GPU selected
+designer, if the GPU utilization of the virtual GPU selected
 by the scheduler is exceeding its assigned bandwidth.
 This particularly works for non-preemptive burst workloads.
-Suppose that the system has two virtual GPUs.
-Both the virtual GPUs execute burst workloads, but the lengh of each
-non-preemptive execution differs.
-If their workloads arrive in turn, they are also dispatched in turn, but
-the GPU utilization could not be fair due to different lengths of
-non-preemptive executions.
-If the scheduler waits for a short time, however, the workload with
-a short non-preemptive execution could arrive with the next request, and
-can then be scheduled to meet the desired bandwidth.
-If the workload does not arrive after the waiting, it implies that this
-is not a burst workload, and hence is not emergent to meet the
-bandwidth.
-For non-burst workloads, the Band scheduler behaves as the Credit
-scheduler in most cases.
+Suppose that the system has two virtual GPUs, both of which execute
+burst workloads with some contexts, but each non-preemptive execution
+has a different length.
+If their contexts arrive in turn, they are also dispatched to the GPU in
+turn, but the GPU utilization could not be fair due to different lengths
+of non-preemptive executions.
+If the scheduler waits for a short interval, however, the context with a
+short length of non-preemptive execution could arrive with the next
+request, and the \texttt{on\_arrival} function can dispatch it to the
+GPU while the scheduler is waiting.
+In such a case, the scheduler needs not to select the next virtual
+GPU, as the \texttt{on\_arrival} function has already dispatched the
+context.
+Otherwise, it returns the selected virtual GPU.
+If the context does not arrive while the scheduler is waiting, it
+implies that this is not a burst workload, and hence is not emergent to
+meet the bandwidth.

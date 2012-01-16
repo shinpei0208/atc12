@@ -1,4 +1,4 @@
-\section{Prototype Implementation}
+\section{System Implementation}
 \label{sec:implementation}
 
 Our prototype implementation is fully open-source and available for the
@@ -34,6 +34,12 @@ call them.
 These API functions are also one-to-one mapped to Gdev \texttt{ioctl}
 commands so that user-space programs can run under Gdev's first-class
 GPU resource management.
+
+Simiar to Gdev API, we provide two versions of CUDA Driver API: one for
+user-space applications and the other for OS applications.
+The former is provided as a user-space library, while the latter is
+provided as a Linux kernel module exporting all CUDA API functions.
+They eventually call the low-level Gdev API functions.
 
 We use \texttt{/proc} filesystem in Linux to configure Gdev.
 For example, the number of virtual GPUs and their maps to physical GPUs

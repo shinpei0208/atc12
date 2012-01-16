@@ -86,17 +86,16 @@ applied implicitly by the OS at runtime.
 It would be nice if users could manage data communiation among contexts
 easily using a familiar method, such as a POSIX IPC mechanism.
 
-Gdev supports device shared memory and provides a set of API
-functions based on the POSIX specification, as listed in
-Table~\ref{tab:gdev_api}.
-Specifically, \texttt{gshmget}, \texttt{gshmat}, \texttt{gshmdt}, and
-\texttt{gshmctl} respectively correspond to POSIX \texttt{shmget},
-\texttt{shmat}, \texttt{shmdt}, and \texttt{shmctl}. 
+Gdev supports shared memory for the GPU, providing a set of API
+functions, as listed in Table~\ref{tab:gdev_api}, based on the POSIX IPC
+standard, \textit{i.e.}, \texttt{gshmget}, \texttt{gshmat},
+\texttt{gshmdt}, and \texttt{gshmctl} correspond to \texttt{shmget},
+\texttt{shmat}, \texttt{shmdt}, and \texttt{shmctl} respectively.
 We have also added \texttt{cuShmGet}, \texttt{cuShmAt},
 \texttt{cuShmDt}, and \texttt{cuShmCtl} to our CUDA API 
 implementation, which correspondingly call the Gdev shared memory
-functions, so that users can easily integrate shared memory for legacy
-CUDA applications.
+functions, so that CUDA applications can easily leverage Gdev's shared
+memory support.
 
 Our shared memory design is straightforward, though its implementation
 is challenging.

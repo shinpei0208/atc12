@@ -26,6 +26,44 @@ To do so, we need to determine what resource parameters maximize
 performance for our Gdev prototype.
 Figure
 
+\begin{figure}[t]
+ \begin{center}
+  \includegraphics[width=0.95\hsize]{eps/chunk.eps}\\
+  \vspace{-1.5em}
+  \caption{Impact of the chunk size on DMA throughput.}
+  \label{fig:chunk}
+ \end{center}
+ \begin{center}
+  \includegraphics[width=0.95\hsize]{eps/dma.eps}\\
+  \vspace{-1.5em}
+  \caption{I/O access v.s. DMA.}
+  \label{fig:io_access}
+ \end{center}
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/memcpy.eps}\\
+  \vspace{-1.5em}
+  \caption{Memory-copy performation.}
+  \label{fig:memcpy}
+ \end{center}
+ \vspace{-1.5em}
+\end{figure}
+
+\begin{figure}[t]
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/basic_performance.eps}\\
+  \vspace{-1.5em}
+  \caption{Basic standalone performance.}
+  \label{fig:basic_performance}
+ \end{center}
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/scheduler_overhead.eps}\\
+  \vspace{-1.5em}
+  \caption{Scheduler overhead under extreme workloads.}
+  \label{fig:scheduler_overhead}
+ \end{center}
+  \vspace{-2em}
+\end{figure}
+
 \subsection{Scheduler Overhead}
 
 We next compare overheads of different scheduler designs among Gdev
@@ -34,6 +72,62 @@ RGEM~\cite{Kato_RTSS11} (user-space).
 
 \subsection{OS Applications with GPUs}
 
-\subsection{Shared Memory Effectiveness}
+\begin{figure}[t]
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/ecryptfs_read.eps}\\
+  \vspace{-1.5em}
+  \caption{Read throughput of eCryptfs.}
+  \label{fig:ecryptfs_read}
+ \end{center}
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/ecryptfs_write.eps}\\
+  \vspace{-1.5em}
+  \caption{Write throughput of eCryptfs.}
+  \label{fig:ecryptfs_write}
+ \end{center}
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/ecryptfs_write_multitask.eps}\\
+  \vspace{-1.5em}
+  \caption{Write throughput of eCryptfs in mult-tasking.}
+  \label{fig:memcpy}
+ \end{center}
+ \vspace{-2em}
+\end{figure}
+
+\subsection{Shared Memory Impact}
+
+\begin{figure}[t]
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/dataflow.eps}\\
+  \vspace{-1.5em}
+  \caption{Impact of shared memory on dataflow tasks.}
+  \label{fig:dataflow}
+ \end{center}
+ \begin{center}
+  \includegraphics[width=\hsize]{eps/swapping.eps}\\
+  \vspace{-1.5em}
+  \caption{Impact of swapping latency.}
+  \label{fig:swapping}
+ \end{center}
+  \vspace{-2em}
+\end{figure}
 
 \subsection{Virtual GPUs Performance}
+
+\begin{figure*}[t]
+ \begin{center}
+  \subfigure[FIFO scheduler] {
+  \includegraphics[width=0.319\hsize]{eps/vgpu_2_fifo.eps}
+  }
+  \subfigure[Credit scheduler] {
+  \includegraphics[width=0.319\hsize]{eps/vgpu_2_credit.eps}
+  }
+  \subfigure[Band scheduler] {
+  \includegraphics[width=0.319\hsize]{eps/vgpu_2_band.eps}
+  }
+  \vspace{-1em}
+  \caption{Achievable utilization of virtual GPUs.}
+  \label{fig:vgpu_2}
+  \end{center}
+  \vspace{-2em}
+\end{figure*}
