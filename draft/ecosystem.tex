@@ -13,7 +13,7 @@
 Gdev is aimed at extending GPU resource management capabilities and a
 class of applications that can benefit from the GPU.
 To this end, it integrates runtime support into the OS.
-Figure~\ref{fig:gdev} illustrates the outline of the Gdev ecosystem.
+Figure~\ref{fig:gdev} illustrates the overview of the Gdev ecosystem.
 First of all, Gdev still supports a traditional execution model, where
 applications call the user-space runtime library through the API, and
 the library sends a series of GPU commands to the device driver through
@@ -25,15 +25,15 @@ It would not therefore be appropriate to call resource management
 primitives along with command calls but with API calls.
 This argument motives the Gdev design below.
 
-Unlike traditional GPGPU approaches, Gdev employs a runtime engine in
-the OS, which composes a set of GPU resource management primitives.
-OS applications can directly access this runtime.
-User-space applications can also use it through the wrapper library provided by
-Gdev, which simply relays API calls to the OS runtime through the system
+Unlike traditional approaches, Gdev employs runtime support in
+the OS, providing GPU resource management primitives along with the API.
+OS applications can use this runtime directly, while user-space
+applications can also use it through the wrapper library provided by
+Gdev, which simply relays API calls to the OS runtime using the system
 call.
-The Gdev approach to resource management is API-driven.
-For example, Gdev invokes a scheduler for GPU computations and
-host-device data transmissions upon corresponding API calls.
+This runtime-unified approach enables Gdev to be API-driven, where the
+scheduler, for instance, is invoked for GPU computations and host-device
+data transmissions upon corresponding API calls.
 
 \begin{table}[t]
  \caption{Representatives of Gdev API.}
@@ -90,10 +90,11 @@ also applicable to those extensions once the API is supported.
 
 \textbf{CUDA Support:}
 In addition to Gdev API, we provide CUDA 4.0 Driver API~\cite{CUDA40}
-support so that legacy CUDA applications can run on top of Gdev.
+support so that legacy CUDA applications can run on top of Gdev in both
+the user space and OS.
 The supported API functions are limited to those that can be implemented
 by the current version of Gdev API, but many legacy CUDA applications
-can perform with such a limited set of API, as we will demonstrate in
+can perform with this limited set of API, as we will show in
 Section~\ref{sec:evaluation}.
 
 Gdev assumes that programs are compiled by NVIDIA CUDA Compiler
@@ -111,16 +112,10 @@ Runtime API by itself, we could leverage Ocelot~\cite{Diamos_PACT10} to
 translate Runtime API to Driver API, in order to run CUDA programs
 written in Runtime API.
 
-\subsection{Resource Management}
-
-Gdev provides memory management and scheduling for the GPU to allow
-multiple users and programs to share the GPU concurrently in
-time-sharing systems.
-It is different from low-level resource management supported by the
-device driver.
-The device driver just connects the GPU and the host program.
-
-priority
-
-Gdev-managed device (GDEV) virtual address space (VAS), context (CTX),
-and memory (MEM)
+\textbf{First-Class Resource Management:}
+Gdev supports first-class memory management and scheduling for the GPU
+to allow time-sharing multi-tasking systems to use the GPU
+efficiently.
+Our Gdev approach classifies GPU resource management primitives into
+the device, virtual address space, context, and memory objects,
+abstracted for a generalization of our approach.
