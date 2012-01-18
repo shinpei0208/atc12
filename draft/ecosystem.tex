@@ -36,42 +36,6 @@ This runtime-unified approach enables Gdev to be API-driven, where the
 scheduler, for instance, is invoked for GPU computations and host-device
 data transmissions upon corresponding API calls.
 
-\begin{table}[t]
- \caption{Representatives of Gdev API.}
- \vspace{-1em}
- \label{tab:gdev_api}
- \begin{center}
-  {\small
-  \begin{tabular}{|l|l|}
-   \hline
-   \textbf{API name} & \textbf{Description}\\
-   \hline
-   \texttt{gopen}/\texttt{gclose} & Open/close the device\\
-   \hline
-   \texttt{gmalloc}/\texttt{gfree} & Allocate/free device memory\\
-   \hline
-   \texttt{gmalloc\_io}/\texttt{gfree\_io} & Allocate/free host I/O memory\\
-   \hline
-   \texttt{gmemcpy\_to\_device} & Copy memory to the device\\
-   \hline
-   \texttt{gmemcpy\_from\_device} & Copy memory from the device\\
-   \hline
-   \texttt{gmemcpy\_in\_device} & Copy memory within the device\\
-   \hline
-   \texttt{glaunch}/\texttt{gsync} & Launch/wait computation\\
-   \hline
-   \texttt{gquery} & Query device information\\
-   \hline
-   \texttt{gshmget}/\texttt{gshmctl} & Manage shared device memory\\
-   \hline
-   \texttt{gshmat}/\texttt{gshmdt} & Share/unshare device memory\\
-   \hline
-  \end{tabular}
-  }
- \end{center}
-\vspace{-1em}
-\end{table}
-
 \textbf{Low-Level API:}
 Gdev provides a set of low-level API functions for GPU programming, as
 shown in Table~\ref{tab:gdev_api}.
@@ -109,8 +73,45 @@ written in Runtime API.
 
 \textbf{First-Class Resource Management:}
 Gdev supports first-class memory management and scheduling for the GPU
-to allow time-sharing multi-tasking systems to use the GPU
-efficiently.
-Our Gdev approach classifies GPU resource management primitives into
-the device, virtual address space, context, and memory objects,
-abstracted for a generalization of our approach.
+to allow time-sharing multi-tasking systems to use the GPU efficiently,
+including shared memory for IPC, swapping for large memory demands,
+resource-based queuing for high-throughput, and resource partitiong
+for virtual GPUs.
+Our resource management scheme is also not limited to GPUs, but can be
+generalized for a broad class of heterogeneous compute devices.
+
+\begin{table}[t]
+ \caption{Representatives of Gdev API.}
+ \vspace{-0.5em}
+ \label{tab:gdev_api}
+ \begin{center}
+  {\footnotesize
+  \begin{tabular}{|l|l|}
+   \hline
+   \textbf{API name} & \textbf{Description}\\
+   \hline
+   \texttt{gopen}/\texttt{gclose} & Open/close the device\\
+   \hline
+   \texttt{gmalloc}/\texttt{gfree} & Allocate/free device memory\\
+   \hline
+   \texttt{gmalloc\_io}/\texttt{gfree\_io} & Allocate/free host I/O memory\\
+   \hline
+   \texttt{gmemcpy\_to\_device} & Copy memory to the device\\
+   \hline
+   \texttt{gmemcpy\_from\_device} & Copy memory from the device\\
+   \hline
+   \texttt{gmemcpy\_in\_device} & Copy memory within the device\\
+   \hline
+   \texttt{glaunch}/\texttt{gsync} & Launch/wait computation\\
+   \hline
+   \texttt{gquery} & Query device information\\
+   \hline
+   \texttt{gshmget}/\texttt{gshmctl} & Manage shared device memory\\
+   \hline
+   \texttt{gshmat}/\texttt{gshmdt} & Share/unshare device memory\\
+   \hline
+  \end{tabular}
+  }
+ \end{center}
+\vspace{-1.5em}
+\end{table}

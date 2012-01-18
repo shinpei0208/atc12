@@ -5,35 +5,29 @@ Our prototype implementation is fully open-source and available for the
 Linux kernel 2.6.32 or later, without any modifications to the
 underlying kernel, on NVIDIA Fermi GPUs.
 It does not depend on proprietary software except for compilers.
-Our device driver implementation is particularly based on what we have
-been developing in collaboration with PathScale
-Corporation~\cite{ENZO}.
-The OS runtime and the CUDA Driver API library, on the other hand, are
-newly implemented.
-Our Gdev prototype is still partly experimental, but it would contribute
-to future research on GPU resource management, given that such
-open-source software for GPUs has not appeared yet.
+%Our device driver implementation is particularly based on what we have
+%been developing in collaboration with PathScale
+%Corporation~\cite{ENZO}.
+%The OS runtime and the CUDA Driver API library, on the other hand, are
+%newly implemented.
+Our prototype implementation is still partly experimental, but it could
+contribute to future research on GPU resource management, given that
+open-source drivers/runtimes for GPUs has not appeared yet.
 
 \textbf{Interface:}
 Gdev is a Linux kernel module (a character device driver) composing the
 device driver and runtime library.
-The device driver manages low-level hardware resources to operate the
-GPU, such as GPU channels, memory-mapped I/O registers, page tables,
-firmware, and voltage and frequency.
-It exposes a set of \texttt{ioctl} commands so that a traditional
-user-space runtime library can still be used on top of Gdev without 
-first-class GPU resource management.
-The runtime library, on the other hand, manages GPU commands and API
-function calls.
-It also coordinates with the Gdev memory manager and scheduler for
-first-class GPU resource management, and uses
-the device-driver raw functions to access hardware resources.
-The Gdev API is implemented in the runtime library, and its function
-symbols are exported from the kernel module so that other OS modules can
-call them.
-These API functions are also one-to-one mapped to Gdev \texttt{ioctl}
-commands so that user-space programs can run under Gdev's first-class
-GPU resource management.
+The device driver manages low-level hardware resources, such as channels
+and page tables, to operate the GPU.
+The runtime library manages GPU commands and API calls.
+It directly uses the device-driver functions to control hardware
+resource usage for first-class GPU resource management.
+The Gdev API is implemented in this runtime library.
+The kernel sympols of the API functions are exported so that other OS
+modules can call them.
+These API functions are also one-to-one mapped to the \texttt{ioctl}
+commands defined by Gdev so that user-space programs can also be managed
+by Gdev.
 
 Simiar to Gdev API, we provide two versions of CUDA Driver API: one for
 the user space and the other for the OS.
@@ -47,14 +41,14 @@ For example, the number of virtual GPUs and their maps to physical GPUs
 are visible to users through \texttt{/proc}.
 The compute and memory bandwidth and memory share for each virtual GPU
 are also configurable at runtime through \texttt{/proc}.
-We plan to integrate the configuration of priority and reserve for
-each single task into \texttt{/proc} based on a TimeGraph
-approach~\cite{Kato_ATC11} in future work.
+We further plan to integrate the configuration of priority and
+reserve for each single task into \texttt{/proc}, using the TimeGraph
+approach~\cite{Kato_ATC11}.
 
 Gdev creates the same number of character device files as virtual GPUs,
 \textit{i.e.}, /dev/\{gdev0,gdev1,...\}.
-Users can simply open one of these device files using Gdev API or CUDA
-API, and it behaves as if it were a physical GPU.
+When users open one of these device files using Gdev API or CUDA API,
+it behaves as if it were one for the physical GPU.
 
 \textbf{Resource Parameters:}
 The performance of Gdev is governed by resource parameters, such as the
@@ -72,15 +66,14 @@ The rest of resource parameters will be determined through the experiments as
 demonstrated in Section~\ref{sec:evaluation}.
 
 \textbf{Portability:}
-Our implementation is still aligned with Direct Rendering Infrastracture
-(DRI)~\cite{DRI} -- a Linux framework for graphics rendering with the GPU.
-Prior work on GPU scheduling, such as TimeGraph~\cite{Kato_ATC11} and
-GERM~\cite{Bautin_MCNC08}, are also based on DRI.
-Therefore, a part of Gdev functionality, such as virtual GPUs and shared
-memory, could be used with these previous solutions for 3-D graphics
-applications.
-Our implementation is also portable for other device drivers and GPU
-architectures, since driver/architecture-dependent functions are cleanly
-separated from resource management functions.
-In fact, we plan to port Gdev for AMD and Intel GPUs as well as other
-NVIDIA GPUs.
+We use Direct Rendering Infrastracture (DRI)~\cite{DRI} -- a Linux
+framework for graphics rendering with the GPU -- to communiate with the
+Linux kernel.
+Hence, some Gdev functionality may be used to manage not only compute
+but also 3-D graphics applications.
+Our implementation approach also abstracts GPU resources by device,
+address space, context, and memory objects, which allows other device
+drivers and GPU architectures to be easily ported.
+We believe that this portability would help to generalize the concept of
+Gdev. 
+

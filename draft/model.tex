@@ -1,4 +1,4 @@
-\section{Background and System Model}
+\section{System Model}
 \label{sec:model}
 
 This paper focuses on a system composed of a GPU and a multi-core CPU.
@@ -9,12 +9,11 @@ typically take the following steps:
 (iii) launch computation on the GPU, 
 (iv) move resultant data back to the host memory, and 
 (v) free the allocated space from the device memory.
-This is the most well-known GPU programming model.
+%This is the most well-known GPU programming model.
 We also assume that the GPU is based on NVIDIA's \textit{Fermi}
 architecture~\cite{Fermi}.
 The concept of Gdev, however, is not limited to Fermi, but is also
-applicable to other architectures as far as the following model is
-applicable: 
+applicable to others if the following model is applicable.
 
 \textbf{Command:}
 The GPU is operated by commands.
@@ -39,35 +38,28 @@ associated with the channel.
 The device driver is in charge of setting page tables for the memory
 management unit on the GPU.
 
+\begin{comment}
 \textbf{I/O Register:}
 The GPU provides a bunch of memory-mapped I/O registers per context
 visible to the device driver through the (PCI) I/O bus.
 The device driver needs to manage these registers to send commands and
 set up channels and address space.
+\end{comment}
 
 \textbf{Compute Unit:}
-The GPU integrates a large number of compute cores on a chip.
-Programmers assign threads for their device programs, and the GPU maps
-them onto the compute cores by a unit of 32 threads.
-Given that such thread assignments are not visible to the CPU, system
-support for GPU resource management should be based on contexts but not
-threads.
-Recall that multiple channels cannot access the same functional unit
-simultaneously, so more than one context cannot run at once, while
-multiple device programs spawned from the same context can.
-Computation on the GPU is also non-preemptive.
+The GPU maps the threads assined by programmers onto the compute cores.
+This thread assignment, however, is not visible to the CPU.
+Hence, GPU resource management by the system should be
+context-based. 
+Multiple contexts cannot run on the same compute unit at once, since
+multiple channels cannot access the same functional unit simultaneously,
+though multiple instances spawned from the same context can run.
+GPU computation is also non-preemptive.
 
 \textbf{DMA Unit:}
-There are two methods to communiate data between the host and device
-memory.
-One maps the device memory directly onto the host memory, and read and
-write data.
-The other uses DMA units equiped on the GPU.
-DMA operation is typically faster for burst access.
-There are also two types of DMA units: (i) synchronous with compute
-units and (ii) asynchronous.
-Only such data transmission that uses the latter type of unit can be
-overlapped with computation on the compute unit.
-For some reason, however, synchronous DMA is faster than asynchronous
-one.
-Data transmission performed by DMA units is also non-preemptive.
+There are two types of DMA units for data transmission: (i) synchronous
+with compute units and (ii) asynchronous.
+Only the latter type of DMA units can overlap their operations with the
+compute unit.
+%For some reason, however, synchronous DMA is faster than asynchronous one.
+DMA data transmission is also non-preemptive.
