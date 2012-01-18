@@ -2,32 +2,19 @@
 \label{sec:model}
 
 This paper focuses on a system composed of a GPU and a multi-core CPU.
-The GPU is managed by the OS and some other pieces of system software
-running on the CPU.
-The programming launguage and its runtime subsystem provide programmers
-with a set of API functions to use the GPU.
-Using these API functions, typical GPU applications take the following
-steps: (i) allocate space to the device memory, (ii) move data to the
-allocated space on the device memory, (iii) launch computation on the
-GPU, (iv) move resultant data back to the host memory, and (v) free the
-allocated space from the device memory.
-This is the most well-known execution model for today's GPU
-programming.
-
-As mentioned in Section~\ref{sec:introduction}, while GPUs have received
-considerable attension in many application domains, OS support for GPUs
-has not yet been well investigated.
-What we believe prevents the research community from tackling GPU
-resource management problems is a lack of information on GPU
-architectures.
-However, the Linux open-source community has investigated the details
-of NVIDIA GPU architectures recently~\cite{envytools}, and now we are
-ready to explore GPU resource management.
-In the following, we define our system model based on \textit{Fermi}
+GPU applications use a set of the API supported by the system, and
+typically take the following steps:
+(i) allocate space to the device memory, 
+(ii) move data to the allocated space on the device memory, 
+(iii) launch computation on the GPU, 
+(iv) move resultant data back to the host memory, and 
+(v) free the allocated space from the device memory.
+This is the most well-known GPU programming model.
+We also assume that the GPU is based on NVIDIA's \textit{Fermi}
 architecture~\cite{Fermi}.
-It should be noted that the concept of Gdev is not limited to Fermi, but
-is applicable to other architectures as far as the following model is
-applicable.
+The concept of Gdev, however, is not limited to Fermi, but is also
+applicable to other architectures as far as the following model is
+applicable: 
 
 \textbf{Command:}
 The GPU is operated by commands.

@@ -21,7 +21,6 @@ planning in autonomous vehicles~\cite{McNaughton_ICRA11}.
 Such a rapid growth of general-purpose computing on GPUs,
 \textit{a.k.a.}, GPGPU, is encouraged by recent advances in GPU
 programming languages, such as CUDA~\cite{CUDA40}.
-% and OpenCL~\cite{OpenCL12}.
 
 Although the use of GPUs in general-purpose domains provides significant
 performance improvements, system software support for GPUs in the market
@@ -44,10 +43,10 @@ Rossbach_SOSP11} provide priority schemes for GPUs, but users
 are required to specify priorities and other parameters by themselves.
 The system thus cannot partition GPU resources for independent sessions.
 
-More essentially, the current programming framework does not allow
-programmers to share device memory among multiple contexts, and the
-total available data size is also limited to the device memory size,
-which would pose non-trivial constraints in general-purpose domains.
+More essentially, the current GPGPU framework does not allow
+users to share memory resources among GPU contexts, and could limit the
+total amount of available data to the physical device memory size, which would pose non-trivial constraints in
+general-purpose domains.
 The current OS and system support for GPUs also leaves the
 application programming interface (API) to the user space, which
 restricts the availability of GPUs to user-space applications.
