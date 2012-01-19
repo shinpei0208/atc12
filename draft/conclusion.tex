@@ -1,11 +1,19 @@
+\vspace{-0.25em}
 \section{Conclusion}
 \label{sec:conclusion}
+\vspace{-0.25em}
 
-We demonstarated that even the absolute performance of standalone
-applications achieved by our Gdev prototype is not very inferior to that
-achieved by NVIDIA proprietary software. 
+This paper has presented Gdev, a new approach to GPU resource management
+that integrates runtime support into the OS.
+Gdev also provides memory management and scheduling schemes
+for the GPU to enable GPUs to be used as first-class computing
+resources in time-sharing systems.
+We implemented a prototype of Gdev, and conducted thorough experiments
+to demonstrate the advantage and disadvantage of our Gdev approach. 
+Our conclusion is that some basic performance needs to be compromised
+due to moving runtime support into the OS, but GPU resources can be
+efficiently shared among users in time-sharing systems, using Gdev.
 
-The Gdev prototype and the application programs used in our evaluation
-are all open-source and may be downloaded from
-{\sf http://github.com/shinpei0208/gdev} (this is temporal and subject
-to change later).
+Our Gdev prototype and the application programs used in our experiments
+are open-source, and may be downloaded from {\sf
+http://github.com/shinpei0208/gdev}.

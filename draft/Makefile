@@ -5,7 +5,7 @@ all:
 	bibtex $(TARGET)
 	latex $(TARGET)
 	latex $(TARGET)
-	dvips -o $(TARGET).ps $(TARGET).dvi
+	dvips -t letter -o $(TARGET).ps $(TARGET).dvi
 	ps2pdf $(TARGET).ps
 	#dvipdf draft.dvi
 

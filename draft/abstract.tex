@@ -8,7 +8,7 @@
 
  We present Gdev, a new approach to GPU resource management in the
  operating system (OS), which allows user-space applications and the OS
- itself to use the GPU as first-class computing resources.
+ itself to use GPUs as first-class computing resources.
  It integrates runtime support into the OS, coordinated with the
  device driver, to extend a class of applications that can benefit from
  the GPU.
@@ -23,11 +23,10 @@
  isolating a certain potion of GPU resources from other time-sharing users.
 
  We implement an open-source prototype of Gdev for Linux on NVIDIA
- GPUs, and identify the advantage and disadvantage of using Gdev,
- compared to proprietary software and previous work.
+ GPUs, to identify the advantage and disadvantage of using Gdev,
+ compared to the proprietary software and previous work.
  Our detailed experiments show that Gdev can, for instance, gain about
- 2x speedups for OS filesystem encryption by using the GPU, improve the
- makespans of data-flow programs by up to 50\%, and maintain virtual
- GPUs utilization within an error of 10\%.
-
+ 2x speedups for an encrypted filesystem leveraging the GPU, improve the
+ makespans of data-flow programs by up to 49\%, and manage the virtual
+ GPU utilization within an error of 7\%.
 \end{abstract}

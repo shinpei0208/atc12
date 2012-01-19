@@ -1,5 +1,6 @@
 \section{System Model}
 \label{sec:model}
+\vspace{-0.25em}
 
 This paper focuses on a system composed of a GPU and a multi-core CPU.
 GPU applications use a set of the API supported by the system, and
@@ -18,16 +19,16 @@ applicable to others if the following model is applicable.
 \textbf{Command:}
 The GPU is operated by commands.
 The commands are architecture-specific.
-Each GPU context is assigned a FIFO queue, where CPU host programs push
-GPU commands.
-When the GPU dispatches these commands, the corresponding context can
-execute. 
+Each GPU context is assigned a FIFO queue into which the CPU programs
+submit GPU commands.
+When the GPU dispatches these commands, the corresponding GPU context
+can execute.
 
 \textbf{Channel:}
 Each GPU context is assigned a hardware channel.
 Command dispatching and context execution are managed per channel.
 In Fermi architecture, multiple channels cannot run simultaneously when
-using the same GPU funtional unit, while they can when using different
+using the same GPU functional unit, while they can when using different
 units.
 However, they are allowed to coexist, and the GPU switches the channels
 automatically in hardware.
@@ -47,19 +48,18 @@ set up channels and address space.
 \end{comment}
 
 \textbf{Compute Unit:}
-The GPU maps the threads assined by programmers onto the compute cores.
-This thread assignment, however, is not visible to the CPU.
-Hence, GPU resource management by the system should be
+The GPU maps threads assigned by programmers to cores on the compute unit.
+This thread assignment, however, is not visible to the CPU, which
+implies that GPU resource management by the system should be
 context-based. 
-Multiple contexts cannot run on the same compute unit at once, since
-multiple channels cannot access the same functional unit simultaneously,
-though multiple instances spawned from the same context can run.
-GPU computation is also non-preemptive.
+Multiple contexts cannot run on the compute unit together, since
+more than channel cannot access the same functional unit simultaneously,
+though multiple requests spawned from the same context can be processed.
+GPU computation is non-preemptive.
 
 \textbf{DMA Unit:}
 There are two types of DMA units for data transmission: (i) synchronous
-with compute units and (ii) asynchronous.
+with the compute unit and (ii) asynchronous.
 Only the latter type of DMA units can overlap their operations with the
 compute unit.
-%For some reason, however, synchronous DMA is faster than asynchronous one.
 DMA data transmission is also non-preemptive.
