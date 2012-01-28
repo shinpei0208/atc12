@@ -114,16 +114,16 @@ workloads are non-preemptive and bursting.
    {\small \verb|    suspend(ctx);|}\\
    {\small \verb|  dispatch(ctx);|}\\
    {\small \verb|}|}\\
-   {\small \verb|vgpu_instace* on_completion(vgpu, ctx) {|}\\
+   {\small \verb|vgpu_object* on_completion(vgpu, ctx) {|}\\
    {\small \verb|  if (vgpu->bgt < 0 && vgpu->utl > vgpu->bw)|}\\
    {\small \verb|    move_to_queue_tail(vgpu);|}\\
    {\small \verb|  next = get_queue_head();|}\\
    {\small \verb|  if (!next) return null;|}\\
    {\small \verb|  if (next != vgpu && next->utl > next->bw) {|}\\
    {\small \verb|    wait_for_short();|}\\
-   {\small \verb|    if (!current) return next;|}\\
-   {\small \verb|    else return null;|}\\
+   {\small \verb|    if (current) return null;|}\\
    {\small \verb|  }|}\\
+   {\small \verb|  return next;|}\\
    {\small \verb|}|}\\
    \hline
   \end{tabular}
