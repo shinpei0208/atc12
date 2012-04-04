@@ -1,0 +1,81 @@
+\vspace{-0.25em}
+\section{System Implementation}
+\label{sec:implementation}
+\vspace{-0.25em}
+
+Our prototype implementation is fully open-source and available for the
+Linux kernel 2.6.32 or later, without any modifications to the
+underlying kernel, on NVIDIA Fermi GPUs.
+It does not depend on proprietary software except for compilers.
+%Our device driver implementation is particularly based on what we have
+%been developing in collaboration with PathScale
+%Corporation~\cite{ENZO}.
+%The OS runtime and the CUDA Driver API library, on the other hand, are
+%newly implemented.
+Our prototype implementation is still partly experimental, but it could
+contribute to future research on GPU resource management, given that
+open-source drivers/runtimes for GPUs are very limited today.
+
+\textbf{Interface:}
+Gdev is a Linux kernel module (a character device driver) composing the
+device driver and runtime library.
+The device driver manages low-level hardware resources, such as channels
+and page tables, to operate the GPU.
+The runtime library manages GPU commands and API calls.
+It directly uses the device-driver functions to control hardware
+resource usage for first-class GPU resource management.
+The Gdev API is implemented in this runtime library.
+The kernel symbols of the API functions are exported so that other OS
+modules can call them.
+These API functions are also one-to-one mapped to the \texttt{ioctl}
+commands defined by Gdev so that user-space programs can also be managed
+by Gdev.
+
+We provide two versions of CUDA Driver API: one for the user space and
+the other for the OS.
+The former is provided as a typical user-space library, while the
+latter is provided as a kernel module, called \textit{kcuda},
+which implements and exports the CUDA API functions.
+They however internally use Gdev API to access the GPU.
+
+We use \texttt{/proc} filesystem in Linux to configure Gdev.
+For example, the number of virtual GPUs and their maps to physical GPUs
+are visible to users through \texttt{/proc}.
+The compute and memory bandwidth and memory share for each virtual GPU
+are also configurable at runtime through \texttt{/proc}.
+We further plan to integrate the configuration of priority and
+reserve for each single task into \texttt{/proc}, using the TimeGraph
+approach~\cite{Kato_ATC11}.
+
+Gdev creates the same number of character device files as virtual GPUs,
+\textit{i.e.}, /dev/\{gdev0,gdev1,...\}.
+When users open one of these device files using Gdev API or CUDA API,
+it behaves as if it were one for the physical GPU.
+
+\textbf{Resource Parameters:}
+The performance of Gdev is governed by resource parameters, such as the
+page size for virtual memory, temporal swap size, waiting time for the
+Band scheduler, period for virtual GPU budgets, chunk size
+for memory-copy, and boundary between I/O access and DMA.
+We use a page size of 4KB, as the Linux kernel uses the same page size
+for host virtual memory by default.
+The swap size is statically set 10\% of the physical device memory.
+The waiting time for the Band scheduler is also statically set 500
+microseconds.
+For the period of virtual GPU budgets, we respect Xen's default setup,
+\textit{i.e.}, we set it 30ms.
+The rest of resource parameters will be determined in
+Section~\ref{sec:evaluation}.
+
+\textbf{Portability:}
+We use Direct Rendering Infrastructure (DRI)~\cite{DRI} -- a Linux
+framework for graphics rendering with the GPU -- to communicate with the
+Linux kernel.
+Hence, some Gdev functionality may be used to manage not only compute
+but also 3-D graphics applications.
+Our implementation approach also abstracts GPU resources by device,
+address space, context, and memory objects, which allows other device
+drivers and GPU architectures to be easily ported.
+%We believe that this portability would help to generalize the concept
+%of Gdev. 
+

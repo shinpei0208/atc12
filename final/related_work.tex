@@ -1,0 +1,125 @@
+\vspace{-0.25em}
+\section{Related Work}
+\label{sec:related_work}
+\vspace{-0.25em}
+
+\textbf{GPU Resource Management:}
+The GPU is a compute device that essentially requires resource management
+to operate.
+Recently the research community has devised several approaches to GPU
+resource management.
+
+TimeGraph~\cite{Kato_ATC11} and GERM~\cite{Bautin_MCNC08} are GPU
+command-driven schedulers integrated in the device driver.
+While TimeGraph provides priority and isolation schemes for
+GPU applications, later extended with resource sharing
+schemes~\cite{Kato_RTAS11}, GERM enhances fair-share GPU resource
+allocation.
+The Gdev scheduler also respects priorities, isolation, and fairness
+similar to TimeGraph and GERM, but adopts an API-driven scheduler model,
+which could reduce a number of scheduler invocations at runtime.
+The API-driven scheduler model is also more reliable to control GPU
+resource usage, since it accounts only when the GPU is used
+for computation and data transmission, wheres the command-driven
+scheduler model assumes all commands to consume GPU resources.
+
+PTask~\cite{Rossbach_SOSP11} is an OS abstraction for GPU applications
+to minimize data communication between the host and device memory
+through a data-flow programming model.
+It also addresses a scheduling problem.
+CGCM~\cite{Jablin_PLDI11} is a compiler and runtime library solution to
+dynamically and automatically optimize host-device data communication.
+Gdev does not support such data-flow programming or automatic code
+generation; however, it provides programmers with a first-class IPC
+primitive to share device memory among GPU contexts, which can similarly
+reduce data communication overhead.
+
+RGEM~\cite{Kato_RTSS11} is a user-space runtime model for real-time
+GPGPU applications.
+It creates preemption points for host-device data transmissions to bound
+the blocking times imposed on high-priority tasks.
+It also separates the context queues to demultiplex the scheduling of
+data transmissions and computations.
+Albeit using a similar queue design to RGEM, Gdev addresses a core
+challenge of integrating GPU resource management into the OS to overcome
+traditional user-space limitations.
+
+In addition to the above differences, Gdev provides virtual GPUs that
+enable users to view a physical GPU as multiple logical GPUs for
+resource usage isolation.
+None of previous work also distinguishes compute and memory bandwidth,
+which could cause GPU resources to be very underutilized in
+reservation strategies.
+Furthermore, our Gdev prototype design and implementation are
+self-contained, allowing the OS to fully control and even use the GPU as
+first-class resources, whereas previous work depend on, more or less,
+proprietary software or existing drivers, which could force their
+solutions, if not concepts, to partly adhere to user-space runtimes.
+
+\begin{comment}
+Comparisons of Gdev and representatives of the above GPU resource
+management approaches are summarized in Table~\ref{tab:related_work}.
+\begin{table*}[t]
+ \caption{Comparisons of Gdev and prior GPU resource management
+ approaches.}
+ \label{tab:related_work}
+ \begin{center}
+  {\sf
+  \begin{tabular}{|l|p{12.8cm}|}
+   \hline
+   \hline
+  \end{tabular}
+  }
+ \end{center}
+\vspace{-1em}
+\end{table*}
+\end{comment}
+
+\textbf{GPUs as OS Resources:}
+A significant limitation on the current GPU programming framework is
+that GPU applications must reside in the user space.
+KGPU~\cite{Sun_SECURITY11_Poster} is a combination of the OS kernel
+module and user-space daemon, which allows the OS to use GPUs by
+up-calling the user-space daemon from the OS to access the GPU.
+On the other hand, Gdev provides OS modules with a set of traditional
+API functions for GPU programming, such as CUDA.
+Hence, legacy GPU application code can run in the OS without any
+modifications and needs not to move back and forth between the user
+space and OS.
+
+\textbf{GPU Virtualization:}
+VMGL~\cite{Lagar-Cavilla_VEE07} virtualizes GPUs at the OpenGL
+API level, and VMware's Virtual GPU~\cite{Dowty_SIGOPS09} exhibits I/O
+virtualization through graphics runtimes.
+On the other hand, Pegasus~\cite{Gupta_ATC11} uses a hypervisor,
+Xen~\cite{Barham_SOSP03} in particular, to co-schedule GPUs and virtual
+CPUs in VMs.
+Nonetheless, these virtualization systems rely on user-space runtimes
+provided by proprietary software, preventing the system from managing
+GPU resources in a fine-grained manner. 
+In addition, they are mainly designed to make GPUs available in
+virtualized environments, but are not tailored to isolate GPU resources
+among users.
+Gdev provides virtual GPUs with strong time and space partitioning, and
+hence could underlie these GPU virtualization systems.
+
+\textbf{I/O Scheduling:}
+GPU scheduling deals with a non-preemptive nature of execution as well
+as traditional I/O scheduling.
+Several disk bandwidth-aware schedulers~\cite{Gulati_FAST09,
+Povzner_EUROSYS08, Wang_FAST07}, for example, contain a similar idea to
+the Gdev scheduler.
+Unlike typical I/O devices, however, GPUs are coprocessors operating
+asynchronously with own sets of execution contexts, registers, and memory.
+Therefore, Gdev adopts a scheduling algorithm more appropriate for
+compute-intensive workload.
+
+\textbf{Compile-Time and Application Approaches:}
+GPU resource usage can be also managed in user application
+programs~\cite{Chen_IPDPS10,Guevara09,Saba_RTSS11}, but these approaches
+essentially require the programs to be modified or recompiled using
+specific compilers and algorithms.
+Thereby, a generality of programming needs to be compromised.
+Under Gdev, on the other hand, applications can use traditional GPU
+programming languages.
+

@@ -1,0 +1,65 @@
+\section{System Model}
+\label{sec:model}
+\vspace{-0.25em}
+
+This paper focuses on a system composed of a GPU and a multi-core CPU.
+GPU applications use a set of the API supported by the system, and
+typically take the following steps:
+(i) allocate space to the device memory, 
+(ii) move data to the allocated space on the device memory, 
+(iii) launch computation on the GPU, 
+(iv) move resultant data back to the host memory, and 
+(v) free the allocated space from the device memory.
+%This is the most well-known GPU programming model.
+We also assume that the GPU is based on NVIDIA's \textit{Fermi}
+architecture~\cite{Fermi}.
+The concept of Gdev, however, is not limited to Fermi, but is also
+applicable to others if the following model is applicable.
+
+\textbf{Command:}
+The GPU is operated by commands.
+The commands are architecture-specific.
+Each GPU context is assigned a FIFO queue into which the CPU programs
+submit GPU commands.
+When the GPU dispatches these commands, the corresponding GPU context
+can execute.
+
+\textbf{Channel:}
+Each GPU context is assigned a hardware channel.
+Command dispatching and context execution are managed per channel.
+In Fermi architecture, multiple channels cannot run simultaneously when
+using the same GPU functional unit, while they can when using different
+units.
+However, they are allowed to coexist, and the GPU switches the channels
+automatically in hardware.
+
+\textbf{Address Space:}
+Each GPU context runs in separate virtual address space, which is also
+associated with the channel.
+The device driver is in charge of setting page tables for the memory
+management unit on the GPU.
+
+\begin{comment}
+\textbf{I/O Register:}
+The GPU provides a bunch of memory-mapped I/O registers per context
+visible to the device driver through the (PCI) I/O bus.
+The device driver needs to manage these registers to send commands and
+set up channels and address space.
+\end{comment}
+
+\textbf{Compute Unit:}
+The GPU maps threads assigned by programmers to cores on the compute unit.
+This thread assignment, however, is not visible to the CPU, which
+implies that GPU resource management by the system should be
+context-based. 
+Multiple contexts cannot run on the compute unit together, since
+more than channel cannot access the same functional unit simultaneously,
+though multiple requests spawned from the same context can be processed.
+GPU computation is non-preemptive.
+
+\textbf{DMA Unit:}
+There are two types of DMA units for data transmission: (i) synchronous
+with the compute unit and (ii) asynchronous.
+Only the latter type of DMA units can overlap their operations with the
+compute unit.
+DMA data transmission is also non-preemptive.
