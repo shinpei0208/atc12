@@ -1,0 +1,32 @@
+\begin{abstract}
+ The graphics processing unit (GPU) has become a very powerful platform
+ embracing a concept of heterogeneous many-core computing.
+ Despite its significant benefits in performance, however, the
+ application domains of GPUs are currently limited, largely due to
+ a lack of first-class resource management primitives to support the GPU
+ in general-purpose time-sharing systems.
+
+ We present Gdev, a new approach to GPU resource management in the
+ operating system (OS), which allows user-space applications and the OS
+ itself to use GPUs as first-class computing resources.
+ It integrates runtime support into the OS, coordinated with the
+ device driver, to extend a class of applications that can benefit from
+ the GPU.
+ This runtime-unified OS approach also enhances the memory management
+ and scheduling capabilities for the GPU.
+ Specifically, Gdev supports shared memory for inter-process
+ communication among GPU contexts and memory swapping for memory
+ allocation demands that exceed the physical space. 
+ Scheduling is also provided to control GPU resource usage for
+ computations and data transmissions.
+ Furthermore, Gdev enables the GPU to be virtualized into logical GPUs,
+ isolating a certain potion of GPU resources from other time-sharing users.
+
+ We implement an open-source prototype of Gdev for Linux on NVIDIA
+ GPUs, to identify the advantage and disadvantage of using Gdev,
+ compared to the proprietary software and previous work.
+ Our detailed experiments show that Gdev can, for instance, gain about
+ 2x speedups for an encrypted filesystem leveraging the GPU, improve the
+ makespans of data-flow programs by up to 49\%, and manage the virtual
+ GPU utilization within an error of 7\%.
+\end{abstract}

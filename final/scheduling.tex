@@ -1,0 +1,180 @@
+\vspace{-0.25em}
+\section{GPU Scheduling}
+\label{sec:scheduling}
+\vspace{-0.25em}
+
+The goal of the Gdev scheduler is to correctly assign computation and
+data transmission times for each GPU context based on the given
+scheduling policy.
+Although we make use of some previous
+techniques~\cite{Kato_RTSS11,Kato_ATC11}, Gdev provides a new queuing
+scheme and virtual GPU support for time-sharing systems.
+Gdev also propagates the task priority used in the OS to the GPU context.
+
+\vspace{-0.25em}
+\subsection{Scheduling and Queuing}
+\label{sec:scheduling_queueing}
+\vspace{-0.25em}
+
+Gdev uses a similar scheme to TimeGraph~\cite{Kato_ATC11} for GPU
+scheduling.
+Specifically, it allows GPU contexts to use GPU resources only if no
+other contexts are using the corresponding resources.
+The pending GPU contexts are queued by the scheduler while waiting for
+the current context using the resources.
+To notify the completion of the current context execution, Gdev
+uses additional GPU commands to generate an interrupt from the GPU.
+The highest-priority context is chosen from the queue upon every
+interrupt, and dispatched to the GPU.
+The computation and data transmission times are separately accumulated
+for resource accounting.
+For compute requests, we also allow the same context to launch compute
+instances simultaneously, and the total makespan from the first to the last
+instance is deemed as the computation time.
+PTask~\cite{Rossbach_SOSP11} and RGEM~\cite{Kato_RTSS11} also use
+similar mechanisms, but do not use interrupts, and thereby resource
+accounting is managed by the user space via the API.
+
+Gdev is API-driven, invoking a scheduler only when \texttt{gmemcpy*} or
+\texttt{glaunch} is called, while TimeGraph is command-driven, invoking
+a scheduler whenever GPU commands are flushed.
+In this regard, Gdev is similar to PTask~\cite{Rossbach_SOSP11} and
+RGEM~\cite{Kato_RTSS11}.
+However, Gdev differs even from these prior work in that it supports
+separate queues for resource accounting of compute and memory-copy
+operations, which we call \textit{Multiple Resource Queues} (MRQ), while
+we call \textit{Single Device Queue} (SDQ) for the previous approach
+where the scheduler supports only a single queue per device for resource
+accounting.
+
+The MRQ scheme is apparently more efficient than the SDQ scheme, when
+different compute and memory-copy operations can be overlapped.
+Suppose that there are two contexts both requesting 50\% of compute
+and 50\% of memory-copy demands.
+The SDQ scheme considers that the demand of each context is 100\% by
+adding compute and memory-copy demands, and the total demand of the
+two context is 200\%.
+This workload thereby looks overloaded under the SDQ scheme.
+The MRQ scheme, on the other hand, does not consider the total workload
+to be overloaded but each resource to be fully utilized.
+
+Gdev creates scheduler threads to separately control the resource
+usage of the GPU compute unit and DMA unit.
+The compute scheduler thread is invoked by GPU interrupts generated upon
+the completion of each GPU compute operation, while the DMA scheduler
+thread is awakened by the Gdev runtime when the memory-copy operation is
+completed, since we do not use interrupts for memory-copy operations.
+
+\vspace{-0.25em}
+\subsection{Virtual GPU Support}
+\label{sec:virtual_gpu}
+\vspace{-0.25em}
+
+Gdev provides virtual GPUs, which virtualize a physical GPU into logical
+GPUs to protect a group of GPU users from others.
+Virtual GPUs are activated by specifying the weights of GPU resources
+assigned to each of them.
+We classify GPU resources to the \textit{memory share}, \textit{memory
+bandwidth}, and \textit{compute bandwidth}.
+The memory share is the weight of the physical memory available for the
+virtual GPU.
+The memory bandwidth is the amount of time in some period given for
+memory-copy operations related to the GPU, and the compute bandwidth is
+that for GPU compute operations.
+For the memory share, Gdev simply partitions the physical memory.
+For the compute and memory-copy bandwidth, however, we leverage the GPU 
+schedulers to meet their requirements.
+Considering a similar characteristic of non-preemptive compute and
+memory-copy operations, we apply the same policy to both the compute and
+memory-copy schedulers.
+
+The challenge for virtual GPU scheduling is raised by the non-preemptive
+and burst nature of GPU workloads.
+We have implemented the Credit scheduling algorithm supported by Xen
+hypervisor~\cite{Barham_SOSP03} to verify if an existing virtual CPU
+scheduling policy can be applied for a virtual GPU scheduler.
+However, we have found that the Credit scheduler fails to maintain the
+desired bandwidth for the virtual GPU, largely attributed to the fact
+that it presumes preemptive constantly-working CPU workloads, while GPU
+workloads are non-preemptive and bursting.
+
+\begin{figure}[t]
+ \begin{center}
+  \begin{tabular}{l}
+   \hline
+   \hline
+   {\small \verb|vgpu->bgt|: budget of the virtual GPU.}\\
+   {\small \verb|vgpu->utl|: actual GPU utilization of the virtual GPU.}\\
+   {\small \verb|vgpu->bw|: bandwidth assigned to the virtual
+   GPU.}\\
+   {\small \verb|current/next|: current/next virtual GPU selected for run.}\\
+   \hline
+   {\small \verb|void on_arrival(vgpu, ctx) {|}\\
+   {\small \verb|  if (current && current != vgpu)|}\\
+   {\small \verb|    suspend(ctx);|}\\
+   {\small \verb|  dispatch(ctx);|}\\
+   {\small \verb|}|}\\
+   {\small \verb|vgpu_object* on_completion(vgpu, ctx) {|}\\
+   {\small \verb|  if (vgpu->bgt < 0 && vgpu->utl > vgpu->bw)|}\\
+   {\small \verb|    move_to_queue_tail(vgpu);|}\\
+   {\small \verb|  next = get_queue_head();|}\\
+   {\small \verb|  if (!next) return null;|}\\
+   {\small \verb|  if (next != vgpu && next->utl > next->bw) {|}\\
+   {\small \verb|    wait_for_short();|}\\
+   {\small \verb|    if (current) return null;|}\\
+   {\small \verb|  }|}\\
+   {\small \verb|  return next;|}\\
+   {\small \verb|}|}\\
+   \hline
+  \end{tabular}
+  \caption{Pseudo-code of the Band scheduler.}
+  \label{fig:band}
+ \end{center}
+ \vspace{-1.5em}
+\end{figure}
+
+To overcome the virtual GPU scheduling problem, we propose a
+\textit{bandwidth-aware non-preemptive device} (Band) scheduling
+algorithm.
+The pseudo-code of the Band scheduler is shown in
+Figure~\ref{fig:band}.
+The \texttt{on\_arrival} function is called when a GPU context
+(\texttt{ctx}) running on a virtual GPU (\texttt{vgpu}) tries to use GPU
+resources via the \texttt{glaunch} or \texttt{gmemcpy*} functions.
+The context can be dispatched to the GPU, only if no other virtual GPUs
+are accessing the GPU.
+Otherwise, the corresponding task is suspended.
+The \texttt{on\_completion} function is called by the scheduler thread
+upon the completion of a GPU context (\texttt{ctx}) assigned to a virtual
+GPU (\texttt{vgpu}), in order to select the next virtual GPU to run.
+
+The Band scheduler is based on the Credit scheduler, but differs in the
+following two points.
+First, the Band scheduler lowers the priority of the virtual GPU, when
+its budget (credit) is exhausted \textit{and} its actual utilization of
+the GPU is exceeding the assigned bandwidth, whereas the Credit
+scheduler always lowers the priority, when the budget is exhausted.
+This prioritization compensates for credit errors posed due to
+non-preemptive executions.
+
+The second modification to the Credit scheduler is that the Band
+scheduler waits for a certain amount of time specified by the system
+designer, if the GPU utilization of the virtual GPU selected
+by the scheduler is exceeding its assigned bandwidth.
+This time-buffering approach works for non-preemptive burst workloads.
+Suppose that the system has two virtual GPUs, both of which run some
+burst-workload GPU contexts, but their non-preemptive execution times
+are different.
+If the contexts arrive in turn, they are also dispatched to the GPU in
+turn, but the GPU utilization could not be fair due to different lengths
+of non-preemptive executions.
+If the scheduler waits for a short interval, however, the context with a
+short length of non-preemptive execution could arrive with the next
+request, and the \texttt{on\_arrival} function can dispatch it to the
+GPU while the scheduler is waiting.
+Thus, resource allocations could become fairer.
+In this case, we need not to select the next virtual GPU, since the
+\texttt{on\_arrival} function has already dispatched one.
+If no contexts have arrived, however, we return the selected virtual GPU.
+This situation implies that there are no burst workloads, and hence no
+emergency to meet the bandwidth.
