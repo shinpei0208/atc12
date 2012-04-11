@@ -1,0 +1,5 @@
+Review #319A
+
+1. Though closed-source drivers are not the focus of Gdev, it would be
+more illuminating to list some proprietary features not supported
+by Gdev. What has to be scarified to use Gdev? Anything fundamental? 
