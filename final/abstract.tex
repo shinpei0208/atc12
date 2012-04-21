@@ -1,32 +1,28 @@
 \begin{abstract}
- The graphics processing unit (GPU) has become a very powerful platform
+ The graphics processing unit (GPU) has become a very powerful platform 
  embracing a concept of heterogeneous many-core computing.
- Despite its significant benefits in performance, however, the
- application domains of GPUs are currently limited, largely due to
- a lack of first-class resource management primitives to support the GPU
- in general-purpose time-sharing systems.
+ However, the benefit of GPUs is currently limited to specific
+ application domains, largely due to a lack of ``first-class'' GPU
+ resource management capabilities for general-purpose multi-tasking
+ systems.
 
- We present Gdev, a new approach to GPU resource management in the
- operating system (OS), which allows user-space applications and the OS
+ We present Gdev, a new ecosystem of GPU resource management in the
+ operating system (OS), which allows the user space and the OS
  itself to use GPUs as first-class computing resources.
- It integrates runtime support into the OS, coordinated with the
- device driver, to extend a class of applications that can benefit from
- the GPU.
- This runtime-unified OS approach also enhances the memory management
- and scheduling capabilities for the GPU.
- Specifically, Gdev supports shared memory for inter-process
- communication among GPU contexts and memory swapping for memory
- allocation demands that exceed the physical space. 
- Scheduling is also provided to control GPU resource usage for
- computations and data transmissions.
- Furthermore, Gdev enables the GPU to be virtualized into logical GPUs,
- isolating a certain potion of GPU resources from other time-sharing users.
+ More specifically, Gdev enables GPU contexts to allocate device memory
+ exceeding the physical space and share the memory resource with other contexts
+ for inter-process communication (IPC).
+ Gdev also supports GPU scheduling to virtualize the GPU into logical
+ GPUs and control resource usage in computation and data movement,
+ providing a strong isolation among GPU contexts and users in
+ multi-tasking systems.
 
- We implement an open-source prototype of Gdev for Linux on NVIDIA
- GPUs, to identify the advantage and disadvantage of using Gdev,
- compared to the proprietary software and previous work.
- Our detailed experiments show that Gdev can, for instance, gain about
- 2x speedups for an encrypted filesystem leveraging the GPU, improve the
- makespans of data-flow programs by up to 49\%, and manage the virtual
- GPU utilization within an error of 7\%.
+ Our evaluation using an open-source implementation of Gdev with Linux
+ and an NVIDIA GPU shows that Gdev is competitive to proprietary
+ software even in basic performance.
+ In addition, for instance, we gain about a 2x speedup for an encrypted
+ file system by allowing the OS to use the GPU.
+ The shared device memory scheme also improves makespans of data-flow
+ programs by up to 49\%, and an error in the utilization of virtualized
+ GPUs provided by Gdev is limited within 7\%.
 \end{abstract}

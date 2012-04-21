@@ -1,4 +1,4 @@
-\vspace{-1em}
+\vspace{-0.5em}
 \section{Introduction}
 \label{sec:introduction}
 \vspace{-0.25em}
@@ -14,9 +14,9 @@ A recent announcement from the TOP500 supercomputing sites in November
 use GPUs.
 For example, scientific climate applications can gain 80x speedups using
 such GPU-based supercomputers~\cite{Shimokawabe10}.
-The benefits of GPUs appear not only in high-performance computing but
+The benefit of GPUs appears not only in high-performance computing but
 also in general-purpose and embedded computing domains.
-According to previous research, GPUs can provide up to an order of 10x
+According to previous research, GPUs can achieve up to an order of 10x
 speedups for software routers~\cite{Han_SIGCOMM10}, 20x speedups for
 encrypted networks~\cite{Jang_NSDI11}, and 15x speedups for motion
 planning in autonomous vehicles~\cite{McNaughton_ICRA11}.
@@ -24,42 +24,50 @@ Such a rapid growth of general-purpose computing on GPUs,
 \textit{a.k.a.}, GPGPU, is brought by recent advances in GPU
 programming languages, such as CUDA~\cite{CUDA40}.
 
-Although the use of GPUs in general-purpose domains provides significant
-performance improvements, system software support for GPUs in the market
-is especially  tailored to accelerate particular applications dedicated
-to the system, but is not well-designed to integrate GPUs into more
-general time-sharing systems.
-The research community thereby has articulated the need to manage GPU
-resources in the operating system (OS)~\cite{Bautin_MCNC08, Kato_ATC11,
-Rossbach_SOSP11}.
-However, these pieces of OS support still limit a class of applications
-that can use GPUs due to a lack of first-class resource management
-primitives, such as virtual memory management, inter-process
-communication (IPC), and time-and-space resource partitioning.
+As these trends show, GPUs are becoming more and more useful in
+general-purpose domains. 
+Nonetheless, system software support for GPUs in today's market is
+tailored to accelerate particular applications dedicated to the
+system; it is not well-designed to integrate GPUs into more
+general-purpose multi-tasking systems.
+Although the previous work raised above~\cite{Han_SIGCOMM10,
+Jang_NSDI11, McNaughton_ICRA11} have drawn improvements in performance
+achieved by GPUs, they could never provide performance or
+quality-of-service (QoS) management without system software primitives.
+Given that those networked and embedded systems are typically composed
+of multiple clients and components, it is essential to manage GPUs as
+first-class computing resources so that they can be accessed by multiple
+tasks simultaneously in a reliable manner.
 
-On time-sharing systems where multiple independent users are logged in,
-for instance, if one executes a high-workload GPGPU program, the
-GPU resources available for the rest of users could be limited.
-GPU schedulers in the state of the arts~\cite{Kato_ATC11,
-Rossbach_SOSP11} provide priority schemes for the GPU, yet users
-are required to specify priorities and other parameters by themselves.
-The system thus cannot partition GPU resources in time-sharing systems.
+The research community has articulated the needs of enhancement in 
+the operating system (OS)~\cite{Bautin_MCNC08, Kato_ATC11,
+Rossbach_SOSP11}, hypervisor~\cite{Gupta_ATC11}, and runtime
+library~\cite{Kato_RTSS11} to make GPUs available in interactive
+and/or virtualized multi-tasking environments.
+However, all these pieces of work depend highly on the user-space runtime
+engine, often included as part of proprietary software, which provides
+the user space with an application programming interface (API).
+This framework limits the use of GPUs only within the user space.
+For example, it prevents the file system or network stack in the OS from
+using GPUs directly.
+There is also another issue of concern in the this framework.
+Employing runtime support in the user space requires the device driver
+to expose resource management primitives to the user space.
+This implies that any non-prilileged user-space programs may abuse the
+GPU resource. 
+As a matter of fact, we can execute a program on an NVIDIA GPU without
+using any user-space runtime libraries, but using a \texttt{ioctl}
+system call directly. 
+We believe that GPUs should be protected by the OS as well as CPUs.
 
-More essentially, the current GPGPU framework does not permit
-users to share memory resources among GPU contexts, and could limit the
-total amount of effective data by the size of physical memory.
-Such constraints may not be acceptable in general-purpose programming.
-The current OS and system support for GPUs also leaves the
-application programming interface (API) to the user space, which
-restricts the availability of GPUs to user-space applications.
-In addition, employing the API in the user-space library implies that
-the device driver exposes its resource management primitives to the user
-space through a system call, which allows malicious programs to abuse
-GPUs using this system call. 
-As a matter of fact, non-privileged user-space programs can directly
-allocate memory and launch computation on NVIDIA GPUs, via the
-\texttt{ioctl} system call in Linux. 
-This explains that the API should also be protected by the OS. 
+Apart from those conceptual issues, there are more fundamental and
+practical issues in publically available software for GPUs.
+For example, memory allocation for GPU computing is not allowed to
+exceed the size of physical device memory.
+We are also not aware of any API that allows GPU contexts to share
+memory resources with others.
+Such constraints in data management may not be acceptable in
+general-purpose programming.
 
 This paper presents \textbf{Gdev}, a new GPGPU ecosystem that addresses
 the current limitations of GPU resource management.
