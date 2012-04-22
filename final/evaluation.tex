@@ -302,7 +302,7 @@ priority level, which avoids such priority inversions.
   \subfigure[Credit scheduler] {
   \includegraphics[width=0.319\hsize]{eps/vgpu_2_credit.eps}
   }
-  \subfigure[Band scheduler] {
+  \subfigure[BAND scheduler] {
   \includegraphics[width=0.319\hsize]{eps/vgpu_2_band.eps}
   }
   \vspace{-1.2em}
@@ -397,19 +397,19 @@ We compare three schedulers, using the SDQ scheme.
 The FIFO scheduler represents a lack of virtual GPU support, and
 the Credit scheduler adopts the scheduling policy of the Xen
 hypervisor.
-The Band scheduler is one provided by Gdev.
+The BAND scheduler is one provided by Gdev.
 According to the results, the FIFO scheduler does not respect isolation
 at all by definition.
 The Credit scheduler also does not really work due to unawareness of
 non-preemptive burst workload.
-The Band scheduler, however, can provide fairer GPU bandwidth allocations.
+The BAND scheduler, however, can provide fairer GPU bandwidth allocations.
 The difference between the utilization of two virtual GPUs is retained
 within 7\% on average.
 
 We next study the effectiveness of the MRQ scheme that separates the
 queues for compute and memory-copy operations.
 Figure~\ref{fig:vgpu_2_band_mrq} illustrates the utilization of two
-virtual GPUs under the Band scheduler, executing the SRAD benchmark
+virtual GPUs under the BAND scheduler, executing the SRAD benchmark
 tasks with different sizes of image.
 We noticed that the compute and memory-copy operations can be
 overlapped, but they affect the run-to-completion time with each other.
@@ -417,7 +417,7 @@ When VGPU 1 uses more compute resources due to a large size of
 computation, the length of memory-copy operations requested by VGPU 0 is
 prolonged due to overlapping.
 As a result, it requires more memory-copy bandwidth.
-However, the available bandwidth is capped by the Band scheduler,
+However, the available bandwidth is capped by the BAND scheduler,
 \textit{i.e.}, both the compute and memory-copy operations are limited 
 to about 50\% of bandwidth at most.
 One can also observe that the MRQ scheme allowed the sum of compute and
@@ -425,7 +425,7 @@ memory-copy bandwidth to exceed 100\%.
 
 We finally demonstrate the scalability of our virtual GPU support.
 Figure~\ref{fig:vgpu_fair_4_band} shows the utilization of four virtual
-GPUs under the Band scheduler, where all virtual GPUs execute four
+GPUs under the BAND scheduler, where all virtual GPUs execute four
 instances of the LUD benchmark task exhaustively to produce fair
 workloads.
 The workloads of each virtual GPU begin in turn at an interval of 30

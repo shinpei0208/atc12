@@ -1,4 +1,4 @@
-\vspace{-0.5em}
+\vspace{-0.25em}
 \section{Introduction}
 \label{sec:introduction}
 \vspace{-0.25em}
@@ -50,15 +50,15 @@ the user space with an application programming interface (API).
 This framework limits the use of GPUs only within the user space.
 For example, it prevents the file system or network stack in the OS from
 using GPUs directly.
-There is also another issue of concern in the this framework.
-Employing runtime support in the user space requires the device driver
-to expose resource management primitives to the user space.
-This implies that any non-prilileged user-space programs may abuse the
-GPU resource. 
-As a matter of fact, we can execute a program on an NVIDIA GPU without
-using any user-space runtime libraries, but using a \texttt{ioctl}
+There is another issue of concern with this framework.
+Since runtime support is employed in the user space, the device
+driver needs to expose resource management primitives to the user space,
+which implies that non-prilileged user-space programs may abuse GPU
+resources.
+As a matter of fact, we can launch any program on an NVIDIA GPU without
+using any user-space runtime libraries, but using an \texttt{ioctl}
 system call directly. 
-We believe that GPUs should be protected by the OS as well as CPUs.
+This explains that GPUs should be protected by the OS as well as CPUs.
 
 Apart from those conceptual issues, there are more fundamental and
 practical issues in publically available software for GPUs.
@@ -69,46 +69,33 @@ memory resources with others.
 Such constraints in data management may not be acceptable in
 general-purpose programming.
 
-This paper presents \textbf{Gdev}, a new GPGPU ecosystem that addresses
-the current limitations of GPU resource management.
-Specifically, Gdev integrates GPU runtime support, including the API,
-into the OS to allow a wide class of user-space applications and the OS
-itself to use GPUs in a reliable manner.
-While OS applications can directly call the API, user-space
-programs can also use it through the system call, such as
-\texttt{ioctl}.
-We also provide an implementation of CUDA API~\cite{CUDA40} wrapping
-Gdev API so that legacy CUDA applications can work with Gdev in both the
-user space and the OS.
-This runtime-unified OS approach forces GPU applications running in
-the same system to be managed by the identical resource management
-entity, which eliminates the concern about malicious programs attempting
-to access GPUs directly.
-The contributions of Gdev also include first-class support for GPU
-resource management in time-sharing systems.
-Specifically, Gdev allows programmers to share device memory resources
-among GPU contexts explicitly using the API. 
-We also leverage this shared memory scheme to allow the system to allocate
-data beyond the size of physical memory space, exploiting implicit data
-eviction and reload between the host and device memory.
-Moreover, Gdev devises virtual GPU support to isolate GPU users in
-time-sharing systems, using a new GPU scheduler to deal with the
-non-preemptive and burst nature of GPU workloads.
-As a proof-of-concept, we finally provide an open-source implementation of Gdev,
-including a device driver and runtime/API library.
+We present \textbf{Gdev}, a new approach to GPU resource management that
+addresses the current limitations of GPGPU ecosystems.
+Gdev integrates runtime support for GPUs into the OS, which allows the
+user space as well as the OS itself to use GPUs through the same API
+set, and protects GPUs from non-prilileged user-space programs at the OS
+level.
+Under this runtime-unified OS model, Gdev further provides first-class GPU
+resource management primitives for multi-tasking systems.
+More specifically, Gdev allows programmers to share device memory
+resources among GPU contexts explicitly using the API. 
+We also leverage this shared memory scheme to allow GPU contexts to
+allocate memory beyond the size of physical device memory.
+Finally, Gdev supports virtual GPUs to strongly isolate GPU resources
+among working entities.
+As a proof-of-concept, we provide an open-source implementation of Gdev.
 In summary, this paper makes the following contributions:
 
 \begin{itemize}
  \vspace{-0.25em}
- \item Identifies the advantage/disadvantage of integrating GPU runtime
-       support into the OS.
+ \item Identifies the advantage/disadvantage of integrating runtime
+       support for GPUs into the OS.
  \vspace{-0.5em}
- \item Enables the OS to use GPUs for computation.
+ \item Enables the OS itself to use GPUs.
  \vspace{-0.5em}
- \item Makes GPUs as first-class computing resources in time-sharing
-       systems -- support for shared memory, memory swapping,
-       and virtual GPUs, in addition to device memory management and GPU
-       scheduling.
+ \item Makes GPUs as first-class computing resources in multi-tasking
+       systems -- memory management and scheduling for inter-process
+       communication (IPC) and GPU virtualization.
  \vspace{-0.5em}
  \item Provides open-source implementations of the GPU device driver,
        runtime/API libraries, utility tools, and Gdev resource
@@ -119,13 +106,15 @@ In summary, this paper makes the following contributions:
  \vspace{-0.25em}
 \end{itemize}
 
+\textbf{Organization:}
 The rest of this paper is organized as follows.
 Section~\ref{sec:model} provides the model and assumptions behind
 this paper.
-Section~\ref{sec:ecosystem} outlines the Gdev ecosystem.
-Section~\ref{sec:memory_management} and \ref{sec:scheduling} propose new
-memory management and scheduling schemes for the GPU.
-Section~\ref{sec:implementation} describes a prototype implementation,
-and its capabilities are demonstrated in Section~\ref{sec:evaluation}.
-Related work are discussed in Section~\ref{sec:related_work}.
+Section~\ref{sec:ecosystem} outlines the concept of Gdev.
+Section~\ref{sec:memory_management} and \ref{sec:scheduling} present
+Gdev memory management and scheduling schemes.
+Section~\ref{sec:implementation} describes our prototype implementation,
+and Section~\ref{sec:evaluation} demonstrates our detailed experimental
+results.
+Section~\ref{sec:related_work} discusses related work.
 We provide our concluding remarks in Section~\ref{sec:conclusion}.

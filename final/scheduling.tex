@@ -65,8 +65,7 @@ the completion of each GPU compute operation, while the DMA scheduler
 thread is awakened by the Gdev runtime when the memory-copy operation is
 completed, since we do not use interrupts for memory-copy operations.
 
-\vspace{-0.25em}
-\subsection{Virtual GPU Support}
+\subsection{Virtual GPU}
 \label{sec:virtual_gpu}
 \vspace{-0.25em}
 
@@ -102,7 +101,6 @@ workloads are non-preemptive and bursting.
  \begin{center}
   \begin{tabular}{l}
    \hline
-   \hline
    {\small \verb|vgpu->bgt|: budget of the virtual GPU.}\\
    {\small \verb|vgpu->utl|: actual GPU utilization of the virtual GPU.}\\
    {\small \verb|vgpu->bw|: bandwidth assigned to the virtual
@@ -127,16 +125,16 @@ workloads are non-preemptive and bursting.
    {\small \verb|}|}\\
    \hline
   \end{tabular}
-  \caption{Pseudo-code of the Band scheduler.}
+  \caption{Pseudo-code of the BAND scheduler.}
   \label{fig:band}
  \end{center}
- \vspace{-1.5em}
+ \vspace{-1.7em}
 \end{figure}
 
 To overcome the virtual GPU scheduling problem, we propose a
-\textit{bandwidth-aware non-preemptive device} (Band) scheduling
+\textit{bandwidth-aware non-preemptive device} (BAND) scheduling
 algorithm.
-The pseudo-code of the Band scheduler is shown in
+The pseudo-code of the BAND scheduler is shown in
 Figure~\ref{fig:band}.
 The \texttt{on\_arrival} function is called when a GPU context
 (\texttt{ctx}) running on a virtual GPU (\texttt{vgpu}) tries to use GPU
@@ -148,16 +146,16 @@ The \texttt{on\_completion} function is called by the scheduler thread
 upon the completion of a GPU context (\texttt{ctx}) assigned to a virtual
 GPU (\texttt{vgpu}), in order to select the next virtual GPU to run.
 
-The Band scheduler is based on the Credit scheduler, but differs in the
+The BAND scheduler is based on the Credit scheduler, but differs in the
 following two points.
-First, the Band scheduler lowers the priority of the virtual GPU, when
+First, the BAND scheduler lowers the priority of the virtual GPU, when
 its budget (credit) is exhausted \textit{and} its actual utilization of
 the GPU is exceeding the assigned bandwidth, whereas the Credit
 scheduler always lowers the priority, when the budget is exhausted.
 This prioritization compensates for credit errors posed due to
 non-preemptive executions.
 
-The second modification to the Credit scheduler is that the Band
+The second modification to the Credit scheduler is that the BAND
 scheduler waits for a certain amount of time specified by the system
 designer, if the GPU utilization of the virtual GPU selected
 by the scheduler is exceeding its assigned bandwidth.

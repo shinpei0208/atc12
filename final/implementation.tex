@@ -3,18 +3,11 @@
 \label{sec:implementation}
 \vspace{-0.25em}
 
-Our prototype implementation is fully open-source and available for the
-Linux kernel 2.6.32 or later, without any modifications to the
-underlying kernel, on NVIDIA Fermi GPUs.
+Our prototype implementation is fully open-source and available for
+NVIDIA Fermi GPUs with the Linux kernel 2.6.33 or later, without any
+kernel modifications.
 It does not depend on proprietary software except for compilers.
-%Our device driver implementation is particularly based on what we have
-%been developing in collaboration with PathScale
-%Corporation~\cite{ENZO}.
-%The OS runtime and the CUDA Driver API library, on the other hand, are
-%newly implemented.
-Our prototype implementation is still partly experimental, but it could
-contribute to future research on GPU resource management, given that
-open-source drivers/runtimes for GPUs are very limited today.
+Hence, it is well self-contained and easy-to-use.
 
 \textbf{Interface:}
 Gdev is a Linux kernel module (a character device driver) composing the
@@ -76,6 +69,18 @@ but also 3-D graphics applications.
 Our implementation approach also abstracts GPU resources by device,
 address space, context, and memory objects, which allows other device
 drivers and GPU architectures to be easily ported.
-%We believe that this portability would help to generalize the concept
-%of Gdev. 
+
+\textbf{Limitations:}
+Our prototype implementation is still partly experimental.
+In particular, it does not yet support texture and 3-D processing.
+Hence, our CUDA Driver API implementation is limited to some extent, but
+many CUDA programs can execute with this limited set of functions, as we
+will demonstrate in Section~\ref{sec:evaluation}.
+CUDA Runtime API~\cite{CUDA40}, a more high-level API than CUDA Driver
+API, is also not supported yet, but we could use
+Ocelot~\cite{Diamos_PACT10} to translate CUDA Runtime API to CUDA Driver
+API.
+Despite such limitations, we believe that our prototype implementation
+contributes greatly to future research on GPU resource management,
+given that open-source drivers/runtimes for GPUs are very limited today.
 
