@@ -186,25 +186,26 @@ it does not need \texttt{memcpy} operations.
 \subsection{Reliability}
 \vspace{-0.25em}
 
-We next evaluate reliability of OS-space runtime support by comparing
-the OS-space API-driven scheme adopted by Gdev and
-PTask~\cite{Rossbach_SOSP11}, OS-space command-driven scheme adopted by
-TimeGraph~\cite{Kato_ATC11} and GERM~\cite{Bautin_MCNC08}, and
-user-space API-driven scheme adopted by RGEM~\cite{Kato_RTSS11}.
-We execute Rodinia benchmarks recursively as fast as possible in
-real-time, contending with such a programs that bypasses the user-space
-runtime library and launch many meaningless GPU computations.
-The user-space API-driven scheme severely suffers from this
-situation, since it cannot schedule such a bypassing program at all.
-The OS-space command-driven scheme can sustain the contention to some
-extent by the command scheduler, but the overhead becomes non-trivial
-due to many scheduler invocations.
-The OS-space API-driven scheme, on the other hand, can reject such a
-bypassing program, since it is not submitted through the API.
+We next evaluate reliability of runtime support integrated in the OS.
+Figure~\ref{fig:scheduler_overhead} compares the performances of the
+OS-space API-driven scheme (Gdev and PTask~\cite{Rossbach_SOSP11}),
+the OS-space command-driven scheme (TimeGraph~\cite{Kato_ATC11} and
+GERM~\cite{Bautin_MCNC08}), and the user-space API-driven scheme
+(RGEM~\cite{Kato_RTSS11}).
+We run Rodinia benchmarks recursively as fast as possible as
+real-time tasks, contending with such background tasks that bypass the
+user-space library and launch many meaningless GPU commands.
+The user-space API-driven scheme severely suffers from this situation,
+since it cannot schedule these bypassing tasks at all.
+The OS-space command-driven scheme is able to sustain the interference
+to some extent by using the GPU command scheduler, but the overhead is
+non-trivial due to many scheduler invocations.
+On the other hand, the OS-space API-driven scheme can reject such command
+submission that is not submitted through the API.
 Gdev and PTask are both API-driven, but PTask exposes the system call to
-the user space, such as \texttt{sys\_set\_ptask\_prio}, 
-which could allow misbehaving programs to abuse GPU priorities.
-As a consequence, Gdev's approach that integrates runtime support into
+user-space pgrams, which could allow misbehaving tasks to abuse GPU
+resources.
+Therefore, Gdev's approach that integrates runtime support into
 the OS is a more reliable solution.
 
 \vspace{-0.25em}
