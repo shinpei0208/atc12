@@ -46,41 +46,53 @@ while CPU programs are compiled by gcc 4.4.6.
  \vspace{-1.5em}
 \end{figure}
 
-We first investigate the basic performance of standalone applications
-achieved by our Gdev prototype in order to argue that the rest of our
-evaluation is practical in the real world. 
-To do so, we need to determine what resource parameters can maximize the
-performance of our Gdev prototype. 
-Figure~\ref{fig:chunk} shows the impact of the chunk size on memory-copy
-DMA speeds for both host-to-device (HtoD) and device-to-host (DtoH)
-data transmissions, tested by different data sizes.
-The throughput is affected by overhead when the chunk size is small,
-while it is also affected by blocking times when the chunk size is
-large.
-One may observe that a chunk size of 4MB is the best trade-off
-for both HtoD and DtoH.
+We evaluate the standalone performance of applications achieved by
+our Gdev prototype to argue that the rest of our evaluation is practical
+in the real world.
+To this end, first of all, we need to find the best parameters used for
+memory-copy optimization, using simple test code that copies data
+between device and host memory.
+
+Figure~\ref{fig:chunk} shows the impact of the chunk size on data
+transfer times for host-to-device (HtoD) and device-to-host (DtoH)
+directions respectively, when using DMA-based memory-copy operations
+with 256MB and 512MB of data.
+Since each chunk incurs some overhead in DMA configuration, a
+smaller chunk size producing a greater number of chunks increases a
+transfer time.
+On the other hand, there is a constraint that the first and last pieces
+of chunks cannot be overwrapped with others, as described in
+Section~\ref{sec:memory_copy}.
+Hence, a larger chunk size leading to a longer blocking time with these
+pieces of chunks also increases a transfer time.
+According to our observation, a chunk size of 4MB is the best trade-off
+for both HtoD and DtoH directions.
+We therefore set the chunk size to 4MB for our experiments.
+
 Figure~\ref{fig:io_access} shows the relative speed of direct I/O
 access to DMA for a small size of data. 
-Due to some cache effects, HtoD and DtoH behave in a different manner.
-According to the results, the data transfer speeds inverse around a
-data size of 4KB for HtoD and 1KB for DtoH.
-Henceforth, we set the chunk size to 4MB, and the data size boundary of
-direct I/O access to 4KB for HtoD and 1KB for DtoH.
+Due to some hardware effect, HtoD and DtoH directions show different
+transfer times, but it clearly explains the advantage of direct I/O
+access for small data.
+According to our observation, the data transfer speed inverses around a
+data size of 4KB and 1KB for HtoD and DtoH directions respectively.
+We therefore set the boundary of direct I/O access and DMA to 4KB and
+1KB for them respectively.
 
-Figure~\ref{fig:memcpy} shows the memory-copy throughput achieved
-by our Gdev prototype compared to the proprietary software.
+Figure~\ref{fig:memcpy} shows memory-copy throughput achieved
+by our Gdev prototype compared to NVIDIA's proprietary software.
 ``Gdev/User'' employs a runtime library in the user-space, while
-``Gdev'' integrates the runtime support into the OS.
-Interestingly, the user-space runtime achieves higher throughput than
-the OS runtime, especially for DtoH.
-This difference comes from host-to-host \texttt{memcpy} effects.
-In particular, \texttt{memcpy} in the Linux kernel performs slower than
-that in the user-space GNU library, when copying data from the I/O
-memory to the main memory.
-This could be the disadvantage of integrating the runtime support into
-the OS, but a further in-depth investigation is required.
-Apart from DtoH with the OS runtime, our Gdev prototype and the
-proprietary software are almost competitive.
+``Gdev'' integrates runtime support into the OS.
+Interestingly, user-space runtime achieves higher throughput than
+OS-space runtime, particularly for DtoH direction.
+This difference comes from \texttt{memcpy}'s effect within host memory.
+In fact, the \texttt{memcpy} implementation in the Linux kernel is slower
+than that in the user-space GNU library, when copying data from host I/O
+to main memory.
+This could be a disadvantage of our approach.
+We will investigate this effect more in depth.
+Apart from the DtoH memory-copy throughput, however, our Gdev prototype
+and NVIDIA's proprietary software are almost competitive.
  
 \begin{table}[t]
  \caption{List of benchmarks.}
@@ -126,30 +138,32 @@ proprietary software are almost competitive.
  \vspace{-1.5em}
 \end{table}
 
-Figure~\ref{fig:basic_performance} depicts the standalone performance of
-benchmarks achieved by our Gdev prototype compared to the 
-proprietary software, using some microbenchmarks and
-Rodinia~\cite{Che_IISWC09} as listed in Table~\ref{tab:benchmarks}.
-First of all, we found that NVIDIA GPUs have some ``performance mode''
-to boost hardware performance, which we have not yet figured out how to
-turn on.
-As observed in LOOP, our open-source implementation incurs about 20\% of
-decrease in performance, compared to the proprietary software.
-The impact on application performance, however, depends on workloads.
-If the workload is very compute-intensive, such as HW and SRAD, the
-impact appears high, while some friendly workload, such as BFS and
-HS, hides this impact.
-In either case, we claim that this performance disadvantage is due to
-implementation issues, but it does not limit the concept of Gdev.
-These benchmarks also identify that our runtime-unified OS approach
-would not be appreciated by data-intensive workloads.
-For example, BP deals with a very large size of data, while its compute
-demand is not very high.
-Such a workload decreases performance with our Gdev prototype due to the
-slow host-to-host \texttt{memcpy} operation in the OS discussed above.
-PINCPY, on the other hand, exhibits little difference in
-performance, since it does not need the host-to-host \texttt{memcpy}
-operation.
+Figure~\ref{fig:basic_performance} demonstrates the standalone
+performance of benchmarks achieved by our Gdev prototype compared to
+NVIDIA's proprietary software.
+Table~\ref{tab:benchmarks} describes the microbenchmarks and
+Rodinia~\cite{Che_IISWC09} benchmarks used in this evaluation.
+First of all, we have found that NVIDIA GPUs have some ``performance
+mode'' to boost hardware performance that we do not use for our Gdev
+prototype implementation.
+As observed in the LOOP benchmark result, our Gdev prototype incurs
+about 20\% of decrease in performance compared to the proprietary
+software due to a lock of performance mode.
+However, the impact of performance mode is workload dependent.
+If workloads are very compute-intensive, such as the HW and SRAD
+benchmarks, this impact appears clearly, whereas some friendly workloads,
+such as the BFS and HS benchmarks, can hide this impact.
+In either case, however, this is an implementation issue, but is
+not a conceptual limitation of Gdev.
+These benchmark results also imply that Gdev's runtime-unified OS approach
+is not appreciated by data-intensive workloads.
+For example, the BP benchmark deals with a very large size of data,
+though its compute demand is not very high.
+Such a workload would not perform well with our Gdev prototype, since
+the \texttt{memcpy} implementation in the Linux kernel is slow.
+On the other hand, the PINCPY benchmark shows little difference in
+performance for our Gdev prototype and the proprietary software, since
+it does not need \texttt{memcpy} operations.
 
 \begin{figure}[t]
  \begin{center}
@@ -172,27 +186,26 @@ operation.
 \subsection{Reliability}
 \vspace{-0.25em}
 
-We next investigate the reliability of GPU schedulers, comparing the OS
-API-driven scheme adopted by Gdev and PTask~\cite{Rossbach_SOSP11}, OS
-command-driven scheme adopted by TimeGraph~\cite{Kato_ATC11} and
-GERM~\cite{Bautin_MCNC08}, and user-space API-driven scheme adopted by
-RGEM~\cite{Kato_RTSS11}.
-We execute each Rodinia benchmark recursively as fast as possible in
-real-time, together with some workloads launching many meaningless GPU
-commands bypassing the runtime library. 
-The user-space API-driven scheduler severely suffers from this
-situation, since it cannot schedule such workloads that bypass the
-scheduler itself.
-The OS command-driven scheduler can sustain the influences by command
-scheduling, but still incurs some overhead due to many scheduler
-invocations.
-The OS API-driven scheduler, on the other hand, can simply reject such
-workloads, since they are not submitted using the API.
-Gdev and PTask are both API-driven, but PTask exposes the scheduler
-system call to the user space, such as \texttt{sys\_set\_ptask\_prio},
-which could allow misbehaving applications to abuse priorities.
-As a consequence, we believe that Gdev is a self-contained reliable
-solution.
+We next evaluate reliability of OS-space runtime support by comparing
+the OS-space API-driven scheme adopted by Gdev and
+PTask~\cite{Rossbach_SOSP11}, OS-space command-driven scheme adopted by
+TimeGraph~\cite{Kato_ATC11} and GERM~\cite{Bautin_MCNC08}, and
+user-space API-driven scheme adopted by RGEM~\cite{Kato_RTSS11}.
+We execute Rodinia benchmarks recursively as fast as possible in
+real-time, contending with such a programs that bypasses the user-space
+runtime library and launch many meaningless GPU computations.
+The user-space API-driven scheme severely suffers from this
+situation, since it cannot schedule such a bypassing program at all.
+The OS-space command-driven scheme can sustain the contention to some
+extent by the command scheduler, but the overhead becomes non-trivial
+due to many scheduler invocations.
+The OS-space API-driven scheme, on the other hand, can reject such a
+bypassing program, since it is not submitted through the API.
+Gdev and PTask are both API-driven, but PTask exposes the system call to
+the user space, such as \texttt{sys\_set\_ptask\_prio}, 
+which could allow misbehaving programs to abuse GPU priorities.
+As a consequence, Gdev's approach that integrates runtime support into
+the OS is a more reliable solution.
 
 \vspace{-0.25em}
 \subsection{GPU Acceleration for the OS}
@@ -222,49 +235,54 @@ solution.
  \vspace{-1.5em}
 \end{figure}
 
-We now evaluate the GPU acceleration for the Linux encrypted filesystem,
-using KGPU's implementation of eCryptfs~\cite{Sun_SECURITY11_Poster}.
+We now evaluate the performance of the Linux encrypted file system
+accelerated by the GPU.
+In particular, we use KGPU's implementation of
+eCryptfs~\cite{Sun_SYSTOR12}.
 KGPU is a framework that allows the OS to access the user-space runtime
-library to use the GPU for its computations.
-We have modified KGPU's eCryptfs to call the CUDA API functions
-provided by Gdev directly, instead of sending requests to the KGPU user-space
-daemon.
+library to use GPUs for computations.
+We have modified KGPU's eCryptfs implementation to call the CUDA API
+functions provided by Gdev directly instead of sending requests to the
+KGPU user-space daemon.
+
 Figure~\ref{fig:ecryptfs_read} and \ref{fig:ecryptfs_write} show the
 read and write throughput of several versions of eCryptfs.
 ``CPU'' represents the CPU implementation, while ``KGPU \& NVIDIA'' and
-``KGPU \& Gdev/User'' represent those that use KGPU with NVIDIA's
-library and Gdev's library in the user space respectively.
-``Gdev'' is our solution that enables the eCryptfs module to use the GPU
-directly in the OS.
-Due to some page cache effects, the read and write throughput are not
-identical, but the advantage of using the GPU is clearly observed.
-One can also observe that our runtime-unified OS approach does not
-provide significant improvements over the KGPU approach.
-However, this is reasonable because a magnitude of improvements in
+``KGPU \& Gdev/User'' represent those using KGPU with NVIDIA's library
+and Gdev's library respectively in the user space. 
+``Gdev'' is our contribution that enables the eCryptfs module to use the
+GPU directly within the OS.
+Due to some page cache effect, read and write are not identical in
+throughput, but an advantage of using the GPU is clearly observed.
+One may observe that Gdev's runtime-unified OS approach does not really
+outperform KGPU's approach.
+This is not surprising at all, because a magnitude of improvements in
 latency achieved by our OS approach would be at most microseconds, while
 the AES/DES operations of eCryptfs performed on the GPU are
 orders-of-milliseconds.
-Nonetheless, Gdev is fairly beneficial since OS applications are freed
-from the user space.
+Nonetheless, Gdev provides a significant benefit that the OS is freed
+from the user space, and thus is more secure.
 
-A further benefit of Gdev for OS applications appears in multi-tasking
-environments.
+A further advantage of using Gdev appears in a multi-tasking scenario.
 Figure~\ref{fig:ecryptfs_write_multitask} shows the write throughput of
-eCryptfs when the FAST search task~\cite{Kim_SIGMOD10} is competing
+eCryptfs when the FAST search task~\cite{Kim_SIGMOD10} is competing for
 the GPU.
-Since Gdev supports priorities, we assign eCryptfs the highest priority,
-while the search task is also assigned a higher priority than other tasks.
-What happens in this scenario is that the performance of eCryptfs is
-affected by the search task without a priority scheme, as observed in
-``KGPU \& NVIDIA''.
-Even with priorities, KGPU could suffer from priority inversions where
-the high-priority eCryptfs task is reduced to the KGPU priority level
-when accessing the GPU, while the search task is executing at a
-higher priority level.
-We can assign a high priority to the KGPU daemon, but it affects all
-user-space GPU applications.
-Using Gdev, on the other hand, GPU applications execute at the identical
-priority level, which avoids such priority inversions.
+Since Gdev supports priorities in the OS, we can assign the eCryptfs
+task with the hightest priority, while the search task is still assigned
+a higher priority than other tasks.
+Using KGPU in this scenario, however, the performance of eCryptfs is
+affected by the search task due to a lack of prioritization, as observed
+in ``KGPU \& NVIDIA''.
+Even with priorities, KGPU could suffer from a priority inversion
+problem, where the high-priority eCryptfs task is reduced to the KGPU
+priority level when accessing the GPU, while the search task is
+executing at the higher priority level.
+We could assign a high priority to the user-space KGPU daemon to avoid
+this priority inversion problem, but it affects all user-space GPU
+applications performance. 
+On the other hand, Gdev can assign each GPU application with an
+identical priority, which addresses the priority inversion problem
+fundamentally.
 
 \vspace{-0.25em}
 \subsection{Impact of Shared Memory}

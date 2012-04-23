@@ -5,15 +5,16 @@
 
 This paper has presented Gdev, a new approach to GPU resource management
 that integrates runtime support into the OS.
-Gdev also provides memory management and scheduling schemes
-for the GPU to enable GPUs to be used as first-class computing
-resources in time-sharing systems.
-We implemented a prototype of Gdev, and conducted thorough experiments
-to demonstrate the advantage and disadvantage of our Gdev approach. 
-Our conclusion is that some basic performance needs to be compromised
-due to moving runtime support into the OS, but GPU resources can be
-efficiently shared among users in time-sharing systems, using Gdev.
+This runtime-unified OS approach realizes new memory management and
+scheduling schemes that enable a wide class of applications to GPUs as
+first-class computing resources in general-purpose multi-tasking systems.
+We implemented a prototype system of Gdev, and conducted thorough
+experiments to demonstrate the advantage and disadvantage of using our
+Gdev approach. 
+Our conclusion is that Gdev needs to compromise some basic performance
+needs due to moving runtime support into the OS, but can enhance GPU
+resource management for multi-tasking systems and enable the OS itself
+to use GPUs for computations.
 
-Our Gdev prototype and the application programs used in our experiments
-are open-source, and may be downloaded from {\sf
-http://github.com/shinpei0208/gdev}.
+Our prototype system and the application programs used in the experiments
+are all open-source, and may be downloaded from our website~\cite{Gdev}.
