@@ -285,7 +285,7 @@ identical priority, which addresses the priority inversion problem
 fundamentally.
 
 \vspace{-0.25em}
-\subsection{Impact of Shared Memory}
+\subsection{Effect of Shared Device Memory}
 \vspace{-0.25em}
 
 \begin{figure}[t]
@@ -315,15 +315,15 @@ fundamentally.
 \begin{figure*}[t]
  \begin{center}
   \subfigure[FIFO scheduler] {
-  \includegraphics[width=0.319\hsize]{eps/vgpu_2_fifo.eps}
+  \includegraphics[width=0.318\hsize]{eps/vgpu_2_fifo.eps}
   }
   \subfigure[Credit scheduler] {
-  \includegraphics[width=0.319\hsize]{eps/vgpu_2_credit.eps}
+  \includegraphics[width=0.318\hsize]{eps/vgpu_2_credit.eps}
   }
   \subfigure[BAND scheduler] {
-  \includegraphics[width=0.319\hsize]{eps/vgpu_2_band.eps}
+  \includegraphics[width=0.318\hsize]{eps/vgpu_2_band.eps}
   }
-  \vspace{-1.2em}
+  \vspace{-1.4em}
   \caption{Util. of virtual GPUs under unfair workloads.}
   \label{fig:vgpu_2}
   \end{center}
@@ -331,63 +331,67 @@ fundamentally.
 \end{figure*}
 
 Figure~\ref{fig:dataflow} shows the speedups of dataflow benchmarks
-brought by Gdev's shared memory scheme.
-We construct a dataflow by a 6x32 tree or a 6x10 rectangle, respecting
-PTask's setup~\cite{Rossbach_SOSP11}.
-``NVIDIA/modular'' and ``Gdev/modular'' use NVIDIA's CUDA API and Gdev's
-CUDA API respectively to implement a dataflow in such a way that
-allocates a self-contained context to each graph node as a module, and
-connects their output and input by copying data between the host and
-device memory back and forth.
-On the other hand, ``Gdev/shm'' uses shared memory instead of
-host-to-device data communication, \textit{i.e.}, it connects the output
-and input by sharing the same ``key'' associated with the corresponding
-shared memory.
-According to the results, the usage of shared memory is very effective
-for dataflows with a large size of data, \textit{e.g.}, it gains a 49\%
-speedup for the 1024x1024 madd tree.
-Specifically, we have observed that ``Gdev/modular'' took 1424ms while
-``Gdev/shm'' took 953ms to complete this dataflow.
-This makes sense, \textit{i.e.}, the data transfer time for each
-1024x1024 integer value was about 8ms on average, and we can reduce data
-communications by a total of 32+16+8+4+2=62 intermediate nodes for a
-6x32 tree, which leads to a total reduced time of 8x62=496ms.
+brought by Gdev's shared device memory functionality.
+Respecting PTask's setup~\cite{Rossbach_SOSP11} for a similar
+evaluation, we make a dataflow by a 6x32 tree or a 6x10 rectangle.
+``NVIDIA/modular'' and ``Gdev/modular'' use NVIDIA's and Gdev's CUDA
+implementations respectively, where a dataflow program is implemented
+in such a way that allocates a self-contained context to each graph node
+as a module, and connects its output and input by copying data between
+host and device memory back and forth.
+``Gdev/shm'' uses shared device memory,
+\textit{i.e.}, it connects output and input by sharing the same ``key''
+associated with the same memory space.
+According to the results, shared device memory is fairly effective for
+dataflows with large data.
+For example, it gains a 49\% speedup for the 1024x1024 madd tree.
+Specifically, ``Gdev/modular'' took 1424ms while ``Gdev/shm'' took 953ms
+to complete this dataflow. 
+This indeed makes sense.
+The average data transfer time for a 1024x1024 integer value was about
+8ms, and we can reduce data communications by a total of
+32+16+8+4+2=62 intermediate nodes for a 6x32 tree, which results in a
+total reduced time of 8x62=496ms.
 It should be noted that PTask achieves more speedups due to advanced
 dataflow scheduling~\cite{Rossbach_SOSP11}.
-However, we provide users with a first-class API primitive for shared
-memory, which could be used as a generic IPC method in different program
-domains.
+However, we provide users with a first-class API primitive to manage
+shared device memory, which could be used as a generic IPC method to
+address different problems.
 Therefore, we distinguish our contribution from PTask.
-It is also surprising that our Gdev prototype performs much better than
-the proprietary software.
+In addition, it is surprising that our prototype system outperforms the
+proprietary software significantly.
 We suspect that the proprietary one takes a long time to initialize
 contexts when there are many active contexts, though an in-depth
 investigation is required.
 
-Figure~\ref{fig:swapping} depicts the impact of memory swapping,
-provided by Gdev, on the makespan of multiple 128MB-data FAST search
-tasks, where another 1GB-data FAST search task is running at the highest
-priority level.
-Given that the GPU used in this evaluation supports
-1.6GB of device memory, we cannot create more than three 128MB-data
-search tasks at once without memory swapping.
-``Gdev/User'' hence fails when the number of the small search tasks
-exceeds three, since our prototype does not support shared memory in the
-user space.
-NVIDIA' proprietary software also fails much earlier.
-We suspect that it would reserve a large space of device memory for
-other purposes.
-With memory swapping, however, all the 128MB-data search tasks can
-survive to execute under this memory pressure, though the slope of
-increase in the makespan changes at a different point when using the
-temporal swap space on the device memory under Gdev.
-In particular, a reflection point appears clearly when the device swap
-space is not leveraged, as observed in ``Gdev w/o swp'', because the
-swapping latency influences the makespan.
-Using the device swap space, however, Gdev can reduce the impact of
-swapping on the makespan, though a reflection point appears a little
-earlier due to the swap space itself causing a less total amount of
-device memory available for applications.
+Figure~\ref{fig:swapping} depicts the impact of memory swapping on the
+makespan of multiple 128MB-data FAST search tasks, when another 1GB-data
+FAST search task runs at the highest priority level. 
+Given that the GPU used in this evaluation supports 1.6GB of device
+memory, we cannot create more than three 128MB-data search tasks at once
+if memory swapping is not provided.
+Memory swapping uses shared device memory, which needs access to the
+page table.
+Hence, our prototype implementation does not support memory swapping as
+well as shared device memory for ``Gdev/User'', and it fails when
+the number of the small search tasks exceeds three.
+Interestingly, NVIDIA' proprietary software fails when the number of the
+small search tasks exceeds one.
+We consider that is because NVIDIA's proprietary software reserves some
+amount of device memory for other purposes.
+Unlike the user-space runtime approaches, Gdev's runtime-unified OS
+approach can support memory swapping, and all the 128MB-data search
+tasks can survive under this memory pressure.
+However, a reflection point when the slope of increase in the makespan
+changes is different, depending on whether the temporal swap
+space allocated on device memory is used or not.
+When the temporal swap space is not used, the reflection point is
+clearer as observed in ``Gdev w/o swp'', because the swapping latency is
+not trivial due to data movement between host and device memory.
+Using the temporal swap space, on the other hand, we can reduce the impact
+of memory swapping on the makespan of the search tasks, but the
+reflection point appears slightly earlier, since the temporal swap space
+itself occupies certain space on device memory.
 
 Figure~\ref{fig:swapping_vgpu} shows the impact of memory swapping on
 virtual GPUs.
@@ -404,23 +408,23 @@ This explains that memory swapping is also useful on virtual GPUs.
 \subsection{Isolation among Virtual GPUs}
 \vspace{-0.25em}
 
-We now examine Gdev's virtual GPU support.
-Figure~\ref{fig:vgpu_2} shows the actual GPU utilization of two virtual
-GPUs, where the first virtual GPU (VGPU 0) executes short-length compute
-programs using the LUD benchmark, while the other (VGPU 1) executes
-long-length compute programs using the HW benchmark.
-These programs run repeatedly to impose high workloads for 200 seconds
-VGPU~1 starts workloads 30 seconds later than VGPU~0.
-We compare three schedulers, using the SDQ scheme.
-The FIFO scheduler represents a lack of virtual GPU support, and
-the Credit scheduler adopts the scheduling policy of the Xen
-hypervisor.
-The BAND scheduler is one provided by Gdev.
-According to the results, the FIFO scheduler does not respect isolation
-at all by definition.
-The Credit scheduler also does not really work due to unawareness of
-non-preemptive burst workload.
-The BAND scheduler, however, can provide fairer GPU bandwidth allocations.
+We now evaluate Gdev in terms of the isolation among virtual GPUs.
+Figure~\ref{fig:vgpu_2} demonstrates the actual GPU utilization of two
+virtual GPUs, achieved by the FIFO, Credit, and BAND schedulers under
+the SDQ scheme.
+VGPU~0 executes the LUD benchmark to produce short-length tasks, while
+VGPU 1 executes the HW benchmark to produce long-length tasks.
+These tasks run repeatedly for 200 seconds to impose high workloads on
+the entire system.
+To see a workload change clearly, VGPU~1 is started 30 seconds after
+VGPU~0.
+Our observation is that the FIFO scheduler is not capable of enforcing
+isolation at all.
+The Credit scheduler also fails to provide isolation, since it is not
+designed to handle non-preemptive burst workload.
+The BAND scheduler, however, can provide much more desired GPU
+utilization, thanks to the ``time-buffering'' policy that allows
+short-length tasks to fully use the assigned bandwidth.
 The difference between the utilization of two virtual GPUs is retained
 within 7\% on average.
 
@@ -454,16 +458,16 @@ workloads.
 
 \begin{figure}[t]
  \begin{center}
-  \includegraphics[width=0.9\hsize]{eps/vgpu_2_band_compute.eps}\\
+  \includegraphics[width=0.93\hsize]{eps/vgpu_2_band_compute.eps}\\
   \vspace{-0.5em}
-  \includegraphics[width=0.9\hsize]{eps/vgpu_2_band_memory.eps}\\
+  \includegraphics[width=0.93\hsize]{eps/vgpu_2_band_memory.eps}\\
   \vspace{-1.5em}
   \caption{Util. of virtual GPUs with the MRQ scheme (upper for compute
   and lower for memory-copy).}
   \label{fig:vgpu_2_band_mrq}
  \end{center}
  \begin{center}
-  \includegraphics[width=0.9\hsize]{eps/vgpu_fair_4_band.eps}\\
+  \includegraphics[width=0.93\hsize]{eps/vgpu_fair_4_band.eps}\\
   \vspace{-1.5em}
   \caption{Util. of virtual GPUs under fair workloads.}
   \label{fig:vgpu_fair_4_band}
