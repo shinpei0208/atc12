@@ -53,7 +53,7 @@ using GPUs directly.
 There is another issue of concern with this framework.
 Since runtime support is employed in the user space, the device
 driver needs to expose resource management primitives to the user space,
-which implies that non-prilileged user-space programs may abuse GPU
+which implies that non-privileged user-space programs may abuse GPU
 resources.
 As a matter of fact, we can launch any program on an NVIDIA GPU without
 using any user-space runtime libraries, but using an \texttt{ioctl}
@@ -61,7 +61,7 @@ system call directly.
 This explains that GPUs should be protected by the OS as well as CPUs.
 
 Apart from those conceptual issues, there are more fundamental and
-practical issues in publically available software for GPUs.
+practical issues in publicly available software for GPUs.
 For example, memory allocation for GPU computing is not allowed to
 exceed the size of physical device memory.
 We are also not aware of any API that allows GPU contexts to share
@@ -73,7 +73,7 @@ We present \textbf{Gdev}, a new approach to GPU resource management that
 addresses the current limitations of GPGPU ecosystems.
 Gdev integrates runtime support for GPUs into the OS, which allows the
 user space as well as the OS itself to use GPUs through the same API
-set, and protects GPUs from non-prilileged user-space programs at the OS
+set, and protects GPUs from non-privileged user-space programs at the OS
 level.
 Under this runtime-unified OS model, Gdev further provides first-class GPU
 resource management primitives for multi-tasking systems.

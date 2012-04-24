@@ -61,7 +61,7 @@ Since each chunk incurs some overhead in DMA configuration, a
 smaller chunk size producing a greater number of chunks increases a
 transfer time.
 On the other hand, there is a constraint that the first and last pieces
-of chunks cannot be overwrapped with others, as described in
+of chunks cannot be overlapped with others, as described in
 Section~\ref{sec:memory_copy}.
 Hence, a larger chunk size leading to a longer blocking time with these
 pieces of chunks also increases a transfer time.
@@ -268,7 +268,7 @@ Figure~\ref{fig:ecryptfs_write_multitask} shows the write throughput of
 eCryptfs when the FAST search task~\cite{Kim_SIGMOD10} is competing for
 the GPU.
 Since Gdev supports priorities in the OS, we can assign the eCryptfs
-task with the hightest priority, while the search task is still assigned
+task with the highest priority, while the search task is still assigned
 a higher priority than other tasks.
 Using KGPU in this scenario, however, the performance of eCryptfs is
 affected by the search task due to a lack of prioritization, as observed

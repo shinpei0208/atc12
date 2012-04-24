@@ -25,7 +25,7 @@ Section~\ref{sec:introduction}.
 In contrast, Gdev's runtime system resides in the OS, which enables both
 user-space and OS-space applications to use the same runtime API set
 protected by the OS.
-Therefore, non-prilileged user-space programs can never bypass the
+Therefore, non-privileged user-space programs can never bypass the
 runtime system with GPU resource management.
 There is a wrapper library required for user-space applications, but this is a
 tiny piece of software that simply relays API calls to the runtime
@@ -78,7 +78,7 @@ large memory demands, resource-based queuing for throughput, and
 bandwidth-aware resource partitioning for virtual GPU isolation.
 Since some of these features require access to low-level system
 information, such as I/O regions, DMA pages, and task control blocks, it
-is not straightfoward for the traditional user-space runtime system to
+is not straightforward for the traditional user-space runtime system to
 manage these pieces of information.
 Hence, we claim that Gdev is a suitable approach to first-class GPU
 resource management.
