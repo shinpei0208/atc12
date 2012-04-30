@@ -5,7 +5,7 @@
 
 We evaluate our Gdev prototype, using the Rodinia
 benchmarks~\cite{Che_IISWC09}, GPU-accelerated eCryptfs encrypted
-filesystem from KGPU~\cite{Sun_SECURITY11_Poster}, FAST database
+filesystem from KGPU~\cite{Sun_SYSTOR12}, FAST database
 search~\cite{Kim_SIGMOD10}, and some dataflow
 microbenchmarks from PTask~\cite{Rossbach_SOSP11}.
 We disclose that the basic performance of our prototype is practical
@@ -376,9 +376,9 @@ page table.
 Hence, our prototype implementation does not support memory swapping as
 well as shared device memory for ``Gdev/User'', and it fails when
 the number of the small search tasks exceeds three.
-Interestingly, NVIDIA' proprietary software fails when the number of the
-small search tasks exceeds one.
-We consider that is because NVIDIA's proprietary software reserves some
+It is interesting to observe that NVIDIA' proprietary software fails
+when the number of the small search tasks exceeds one.
+This is because NVIDIA's proprietary software reserves some
 amount of device memory for other purposes.
 Unlike the user-space runtime approaches, Gdev's runtime-unified OS
 approach can support memory swapping, and all the 128MB-data search
@@ -423,10 +423,10 @@ Our observation is that the FIFO scheduler is not capable of enforcing
 isolation at all.
 The Credit scheduler also fails to provide isolation, since it is not
 designed to handle non-preemptive burst workload.
-The BAND scheduler, however, can provide much more desired GPU
-utilization, thanks to the ``time-buffering'' policy that allows
-short-length tasks to fully use the assigned bandwidth.
-The difference between the utilization of two virtual GPUs is retained
+The BAND scheduler, however, can almost provide the desired GPU
+utilization, thanks to the time-buffering policy that allows
+short-length tasks to meet the assigned bandwidth.
+An error in the utilization of two virtual GPUs is retained
 within 7\% on average.
 
 We next study the effectiveness of the MRQ scheme that separates the

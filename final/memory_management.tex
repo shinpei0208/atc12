@@ -19,30 +19,31 @@ support data swap for large device memory demands.
 \label{sec:memory_copy}
 \vspace{-0.25em}
 
-As data need to move across device and host memory in GPU applications, 
-the memory-copy throughput could govern overall application performance.
-The goal of this paper is to enhance GPU resource management, but
-we still respect standalone performance, since it relates to a practical
-use of our solution in the real world.
+Given that data move across device and host memory back and forth,
+memory-copy throughput could govern the overall performance of GPU
+applications.
+While the primary goal of this paper is to enhance GPU resource
+management, we respect standalone performance as well for practical
+use.
 Hence, we first study the characteristic of memory-copy operations.
 
 \textbf{Split Transaction:}
 We often need to copy the same data set twice to communicate with the
 GPU, unless we allocate buffers to host I/O memory directly.
-One copy happens within host memory to move data between main memory
-and I/O memory that is accessible to the GPU.
-The other copy then happens between device and host I/O memory.
-In order to optimize this two-step memory-copy operation, we split each
-operation into a fixed size of chunks.
-While some chunk is transferred within host memory, the preceding chunk
-can be transferred between device and host I/O memory.
-In this way, only the first and last pieces of chunks need to be
+One copy happens within host memory, moving data between main memory
+and host I/O memory, \textit{a.k.a.}, pinned pages of host memory.
+The other copy happens between device and host I/O memory.
+In order to optimize this two-stage memory-copy operation, we split the
+data buffer into a fixed size of multiple chunks.
+Using split transactions, while some chunk is transferred within host
+memory, the preceding chunk can be transferred between device and host
+I/O memory.
+Thus, only the first and last pieces of chunks need to be
 transferred alone, and other chunks are all overlapped, thus reducing a
 total makespan almost half.
-This split transaction approach also has an advantage that we need only
-a small size of intermediate ``bounce'' buffers on host I/O memory equal
-to the chunk size, thus reducing the usage of host I/O memory
-significantly.
+An additional advantage of this method is that only the same size of an
+intermediate ``bounce'' buffer as the chunk size is required on host I/O
+memory, thus reducing the usage of host I/O memory significantly.
 
 \textbf{Direct I/O Access:}
 The split transaction is effective for a large size of data.
@@ -104,11 +105,12 @@ running on the CPU must use traditional mutex/semaphore mechanisms.
 \vspace{-0.25em}
 
 We have found that proprietary software in Linux~\cite{CUDA40} fails to
-allocate device memory exceeding the physical memory capacity, while
-PTask~\cite{Rossbach_SOSP11} claims that Windows software can somehow
-swap device memory.
-In either case, however, it is not well studied how to swap device
-memory and speed up its operation.
+allocate device memory exceeding the physical memory capacity, while the
+Windows display driver~\cite{Pronovost06} supports data swapping to 
+some extent.
+In either case, however, a framework of data swapping with GPUs has not
+been well studied so far.
+We hence study how to swap data when executing multiple GPU contexts.
 
 Gdev uses the shared device memory functionality to achieve data
 swapping.
@@ -142,11 +144,11 @@ shared memory object:
 We allocate swap buffers to host main memory for evicted data.
 Swapping itself is a simple asynchronous memory-copy operation, but is
 not visible to application programs.
-It should be noted that swapping does not occur when copying data from
-device memory to host memory.
-If the corresponding data set is evicted in the swap space, we can just
-copy them from the swap space to the user buffer directly, and there is
-no need to swap them back to device memory.
+It should be noted that swapping never occurs when copying data from
+device to host memory.
+If the corresponding data set is evicted in the swap space, it can be
+retrieved from the swap space directly, and there is no need to swap it
+back to device memory.
 
 \textbf{Reducing Latency:}
 It is apparent that the swapping latency could be non-trivial, depending

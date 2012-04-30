@@ -4,52 +4,53 @@
 \vspace{-0.25em}
 
 \textbf{GPU Resource Management:}
-TimeGraph~\cite{Kato_ATC11} and GERM~\cite{Bautin_MCNC08} are GPU
-command-driven schedulers integrated in the device driver.
-While TimeGraph provides priority and isolation schemes for
-GPU applications, later extended with resource sharing
-schemes~\cite{Kato_RTAS11}, GERM enhances fair-share GPU resource
-allocation.
-The Gdev scheduler also respects priorities, isolation, and fairness
-similar to TimeGraph and GERM, but adopts an API-driven scheduler model,
-which could reduce a number of scheduler invocations at runtime.
-The API-driven scheduler model is also more reliable to control GPU
-resource usage, since it accounts only when the GPU is used
-for computation and data transmission, wheres the command-driven
-scheduler model assumes all commands to consume GPU resources.
+TimeGraph~\cite{Kato_ATC11} and GERM~\cite{Bautin_MCNC08} provide a GPU
+command-driven scheduler integrated in the device driver.
+Specifically, TimeGraph achieves a prioritization and isolation scheme,
+extended with a resource sharing scheme~\cite{Kato_RTAS11} later on,
+whereas GERM enhances fair-share GPU resource control.
+Gdev also respects a prioritization, isolation, and fairness scheme,
+similar to TimeGraph and GERM, but adopts an API-driven scheduler model
+to reduce the number of scheduler invocations.
+The overhead of the command-driven scheduler model was
+also discussed in \cite{Kato_ATC11}.
+
 
 PTask~\cite{Rossbach_SOSP11} is an OS abstraction for GPU applications
-to minimize data communication between the host and device memory
-through a data-flow programming model.
-It also addresses a scheduling problem.
-CGCM~\cite{Jablin_PLDI11} is a compiler and runtime library solution to
-dynamically and automatically optimize host-device data communication.
-Gdev does not support such data-flow programming or automatic code
-generation; however, it provides programmers with a first-class IPC
-primitive to share device memory among GPU contexts, which can similarly
-reduce data communication overhead.
+that optimizes data transfers between host and device memory using
+a data-flow programming model and a GPU scheduler.
+CGCM~\cite{Jablin_PLDI11} is another solution based on the compiler and
+runtime library that dynamically and automatically optimizes the same
+sort of data trasfers.
+In contrast, Gdev does not support data-flow programming or automatic
+code generation.
+Alternatively, it provides programmers with an explicit API set to share
+device memory among GPU contexts.
+Such an IPC scheme can similarly reduce data transfer overhead.
 
 RGEM~\cite{Kato_RTSS11} is a user-space runtime model for real-time
 GPGPU applications.
-It creates preemption points for host-device data transmissions to bound
-the blocking times imposed on high-priority tasks.
-It also separates the context queues to demultiplex the scheduling of
-data transmissions and computations.
-Albeit using a similar queue design to RGEM, Gdev addresses a core
-challenge of integrating GPU resource management into the OS to overcome
-traditional user-space limitations.
+It creates preemption points with data transfers between host and device
+memory in order to bound blocking times imposed on high-priority tasks.
+It also provides separate queues to demultiplex the schedulings of data
+transfers and computations.
+Albeit using a similar separate-queue scheme, Gdev addresses a core
+challenge of GPU resource management integreated in the OS to overcome
+the user-space limitations.
 
-In addition to the above differences, Gdev provides virtual GPUs that
-enable users to view a physical GPU as multiple logical GPUs for
-resource usage isolation.
-None of previous work also distinguishes compute and memory bandwidth,
-which could cause GPU resources to be very underutilized in
-reservation strategies.
-Furthermore, our Gdev prototype design and implementation are
-self-contained, allowing the OS to fully control and even use the GPU as
-first-class resources, whereas previous work depend on, more or less,
-proprietary software or existing drivers, which could force their
-solutions, if not concepts, to partly adhere to user-space runtimes.
+In addition to the differences described above, Gdev can virtualize the
+GPU in the OS, which enables users to view a physical GPU as multiple
+logical GPUs for strong resource isolation.
+None of the previous work has also devided compute and memory
+bandwidth reservations, whereas Gdev accounts for these bandwidth
+reservations independently to maximize the overall GPU utilization.
+Furthermore, the previous work depend more or less on proprietary
+software or existing software stack, which could force design and
+implementation, if not concept, to adhere to user-space runtime
+libraries.
+Our prototype design and implementation of Gdev, in contrast, is fully
+self-contained, allowing the OS to fully control and even use GPUs as
+first-class computing resources.
 
 \begin{comment}
 Comparisons of Gdev and representatives of the above GPU resource
@@ -78,9 +79,11 @@ module and user-space daemon, which allows the OS to use GPUs by
 up-calling the user-space daemon from the OS to access the GPU.
 On the other hand, Gdev provides OS modules with a set of traditional
 API functions for GPU programming, such as CUDA.
-Hence, legacy GPU application code can run in the OS without any
-modifications and needs not to move back and forth between the user
-space and OS.
+Hence, a legacy GPU application program can execute in the OS, as it is,
+without any modifications and additional communications between the user
+space and the OS.
+In addition, we have shown that runtime support integrated in the OS is
+more reliable.
 
 \textbf{GPU Virtualization:}
 VMGL~\cite{Lagar-Cavilla_VEE07} virtualizes GPUs at the OpenGL
@@ -110,11 +113,12 @@ Therefore, Gdev adopts a scheduling algorithm more appropriate for
 compute-intensive workload.
 
 \textbf{Compile-Time and Application Approaches:}
-GPU resource usage can be also managed in user application
-programs~\cite{Chen_IPDPS10,Guevara09,Saba_RTSS11}, but these approaches
-essentially require the programs to be modified or recompiled using
-specific compilers and algorithms.
-Thereby, a generality of programming needs to be compromised.
-Under Gdev, on the other hand, applications can use traditional GPU
-programming languages.
+GPU resources can also be managed by application
+programs without using drivers and
+libraries~\cite{Chen_IPDPS10,Guevara09,Saba_RTSS11}.
+However, these approaches essentially need to modify or recompile the
+programs using specific compilers and/or algorithms.
+Thus, a generality of programming frameworks need to be compromised.
+In contrast, Gdev allows applications to use traditional GPU programming
+frameworks.
 

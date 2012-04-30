@@ -1,21 +1,20 @@
 \begin{abstract}
  The graphics processing unit (GPU) has become a very powerful platform 
  embracing a concept of heterogeneous many-core computing.
- However, the benefit of GPUs is currently limited to specific
- application domains, largely due to a lack of ``first-class'' GPU
- resource management capabilities for general-purpose multi-tasking
- systems.
+ However, application domains of GPUs are currently limited largely due
+ to a lack of ``first-class'' GPU resource management for
+ general-purpose multi-tasking systems.
 
  We present Gdev, a new ecosystem of GPU resource management in the
- operating system (OS), which allows the user space and the OS
+ operating system (OS), which allows the user space as well as the OS
  itself to use GPUs as first-class computing resources.
- More specifically, Gdev enables GPU contexts to allocate device memory
- exceeding the physical space and share the memory resource with other contexts
- for inter-process communication (IPC).
- Gdev also supports GPU scheduling to virtualize the GPU into logical
- GPUs and control resource usage in computation and data movement,
- providing a strong isolation among GPU contexts and users in
- multi-tasking systems.
+ More specifically, Gdev provides a virtual memory management scheme to
+ allow GPU contexts to allocate device memory exceeding the physical
+ capacity, and share memory space with other contexts for inter-process
+ communication (IPC).
+ It also supports a GPU scheduling scheme to virtualize a single GPU
+ into multiple logical GPUs, providing an isolation among specific user
+ groups in multi-tasking systems.
 
  Our evaluation using an open-source implementation of Gdev with Linux
  and an NVIDIA GPU shows that Gdev is competitive to proprietary
