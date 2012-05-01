@@ -24,8 +24,8 @@ Such a rapid growth of general-purpose computing on GPUs,
 \textit{a.k.a.}, GPGPU, is brought by recent advances in GPU
 programming languages, such as CUDA~\cite{CUDA40}.
 
-As these trends show, GPUs are becoming more and more useful in
-general-purpose domains. 
+As these trends show, GPUs are becoming more and more useful for
+general-purpose systems.
 Nonetheless, system software support for GPUs in today's market is
 tailored to accelerate particular applications dedicated to the
 system; it is not well-designed to integrate GPUs into more
@@ -60,13 +60,13 @@ using any user-space runtime libraries, but using an \texttt{ioctl}
 system call directly. 
 This explains that GPUs should be protected by the OS as well as CPUs.
 
-Apart from those conceptual issues, there are more fundamental and
-practical issues in publicly available software for GPUs.
+In addition to those conceptual issues, there are more fundamental and
+practical issues with publicly-available GPGPU software.
 For example, memory allocation for GPU computing is not allowed to
-exceed the size of physical device memory.
+exceed the physical capacity of device memory.
 We are also not aware of any API that allows GPU contexts to share
-memory resources with others.
-Such constraints in data management may not be acceptable in
+memory resources with other contexts.
+Such data management constraints may not be acceptable in
 general-purpose programming.
 
 We present \textbf{Gdev}, a new approach to GPU resource management that
@@ -80,7 +80,7 @@ resource management primitives for multi-tasking systems.
 More specifically, Gdev allows programmers to share device memory
 resources among GPU contexts explicitly using the API. 
 We also leverage this shared memory scheme to allow GPU contexts to
-allocate memory beyond the size of physical device memory.
+allocate memory beyond the physical size of device memory.
 Finally, Gdev supports virtual GPUs to strongly isolate GPU resources
 among working entities.
 As a proof-of-concept, we provide an open-source implementation of Gdev.
