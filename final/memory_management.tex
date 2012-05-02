@@ -12,7 +12,7 @@ stored in host memory.
 Beyond such basic pieces of memory management, this section seeks how to
 improve memory-copy throughput.
 We also explore how to share memory resources among GPU contexts, and
-support data swap for large device memory demands.
+support data swap for excessive memory demands.
 
 \vspace{-0.25em}
 \subsection{Memory-Copy Optimization}
@@ -28,7 +28,7 @@ use.
 Hence, we first study the characteristic of memory-copy operations.
 
 \textbf{Split Transaction:}
-We often need to copy the same data set twice to communicate with the
+We often need to copy the same data set \textit{twice} to communicate with the
 GPU, unless we allocate buffers to host I/O memory directly.
 One copy happens within host memory, moving data between main memory
 and host I/O memory, \textit{a.k.a.}, pinned pages of host memory.
@@ -44,6 +44,7 @@ total makespan almost half.
 An additional advantage of this method is that only the same size of an
 intermediate ``bounce'' buffer as the chunk size is required on host I/O
 memory, thus reducing the usage of host I/O memory significantly.
+It should be noted that ``pinned'' pages do not use split transaction.
 
 \textbf{Direct I/O Access:}
 The split transaction is effective for a large size of data.
@@ -65,17 +66,17 @@ best chunk size to optimize memory-copy throughput.
 
 Existing GPU programming languages do not support an explicit API
 for IPC.
-For example, data communication among GPU contexts incurs significant
+For example, data communications among GPU contexts incur significant
 overhead due to copying data back and forth between device and host
 memory.
 Currently, an OS dataflow abstraction~\cite{Rossbach_SOSP11} is a useful
 approach to reduce such data movement costs; users are required to use a
 dataflow programming model.
-We believe that it is more flexible for programmers to
-use a familiar method, such as a POSIX IPC mechanism.
+We believe that it is more flexible and straightforward for programmers to
+use a familiar POSIX-like method.
 
-Gdev supports a set of API functions to share memory resources among GPU
-contexts, respecting a POSIX IPC design of \texttt{shmget},
+Gdev supports a set of API functions to share device memory space
+among GPU contexts respecting POSIX IPC functions of \texttt{shmget},
 \texttt{shmat}, \texttt{shmdt}, and \texttt{shmctl}.
 As a high-level API, we extend CUDA  to provide new API functions of
 \texttt{cuShmGet}, \texttt{cuShmAt}, \texttt{cuShmDt}, and
@@ -100,7 +101,7 @@ If the shared memory object needs exclusive access, the host program
 running on the CPU must use traditional mutex/semaphore mechanisms.
 
 \vspace{-0.25em}
-\subsection{Memory Swapping}
+\subsection{Data Swapping}
 \label{sec:memory_swapping}
 \vspace{-0.25em}
 
@@ -110,7 +111,8 @@ Windows display driver~\cite{Pronovost06} supports data swapping to
 some extent.
 In either case, however, a framework of data swapping with GPUs has not
 been well studied so far.
-We hence study how to swap data when executing multiple GPU contexts.
+This section explores how to swap data in the presence of multiple GPU
+contexts.
 
 Gdev uses the shared device memory functionality to achieve data
 swapping.
@@ -124,7 +126,7 @@ Unlike an explicit shared memory object obtained through the API
 presented in Section~\ref{sec:shared_memory}, an implicit shared memory
 object must evict data when accessed by other contexts, and retrieve
 them later when the corresponding context is resumed.
-Since Gdev is designed API-driven, we know when contexts may access the
+Since Gdev is designed API-driven, it is known when contexts may access the
 shared memory object:
 \begin{itemize}
  \vspace{-0.25em}
@@ -156,8 +158,8 @@ on the data size.
 In order to reduce this latency, Gdev reserves a certain amount of
 device memory space as \textit{temporal swap space}.
 Since a memory-copy operation within device memory is much faster than
-that between device and host memory, Gdev tries to evict data to the
-temporal swap space first.
+that between device and host memory, Gdev first tries to evict data to
+this temporal swap space.
 This temporarily-evicted data set is eventually evicted to host memory
 after a while to free up the swap space for other contexts. 
 Gdev also tries to hide this second eviction latency by overlapping it

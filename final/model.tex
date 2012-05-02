@@ -4,38 +4,38 @@
 \vspace{-0.25em}
 
 This paper focuses on a system composed of a GPU and a multi-core CPU.
-GPU applications use a set of the API supported by the system, and
-typically take the following steps:
-(i) allocate space to the device memory, 
-(ii) move data to the allocated space on the device memory, 
-(iii) launch computation on the GPU, 
-(iv) move resultant data back to the host memory, and 
-(v) free the allocated space from the device memory.
-We also assume that the GPU is based on NVIDIA's \textit{Fermi}
+GPU applications use a set of the API supported by the system, typically
+taking the following steps:
+(i) allocate space to device memory, 
+(ii) copy data to the allocated device memory space, 
+(iii) launch the program on the GPU, 
+(iv) copy resultant data back to host memory, and 
+(v) free the allocated device memory space.
+We also assume that the GPU is designed based on NVIDIA's \textit{Fermi}
 architecture~\cite{Fermi}.
 The concept of Gdev, however, is not limited to Fermi, but is also
-applicable to others if the following model is applicable.
+applicable to those based on the following model.
 
 \textbf{Command:}
-The GPU is operated by architecture-specific commands, and each GPU
-context is assigned a FIFO queue into which the CPU program submits
-these commands.
-The context can execute on the GPU only when the GPU dispatches these
-commands.
+The GPU operates using the architecture-specific commands.
+Each GPU context is assigned with a FIFO queue to which the program
+running on the CPU submits the commands.
+Computations and data transfers on the GPU are triggered only when the
+corresponding commands are dispatched by the GPU itself.
 
 \textbf{Channel:}
-Each GPU context is assigned a hardware channel.
-Command dispatching is managed only within the channel.
-According to Fermi architecture, multiple channels cannot run
-at the same time when accessing the same GPU functional unit, but are
-allowed to coexist and switched automatically in hardware.
-Such a constraint may however be removed in the future.
+Each GPU context is assigned with a GPU hardware channel within which
+command dispatching is managed.
+Fermi does not permit multiple channels to access the
+same GPU functional unit simultaneously, but allow them to coexist being
+switched automatically in hardware.
+This constraint may be removed in the future architectures or product lines.
 
 \textbf{Address Space:}
-Each GPU context runs in separate virtual address space, which is also
-associated with the channel.
-The device driver is in charge of setting page tables for the memory
-management unit on the GPU.
+Each GPU context is assigned with virtual address space managed through
+the page table configured by the device driver.
+Address translations are performed by he memory management unit on the
+GPU.
 
 \begin{comment}
 \textbf{I/O Register:}
@@ -46,14 +46,13 @@ set up channels and address space.
 \end{comment}
 
 \textbf{Compute Unit:}
-The GPU maps threads assigned by programmers to cores on the compute unit.
-This thread assignment, however, is not visible to the system, which
-implies that GPU resource management at the system level should be
-context-based. 
-Multiple contexts cannot run on the compute unit simultaneously, since
-multiple channels cannot access the same functional unit at the same
-time, though multiple requests spawned from the same context can be
-processed simultaneously.
+The GPU maps \textit{threads} assigned by programmers to \textit{cores}
+on the compute unit.
+This thread assignment is not visible to the system, implying that GPU
+resource management at the system level should be context-based. 
+Multiple contexts cannot execute on the compute unit at once due to the
+channel constraint, but multiple requests issued from the same context
+can be processed simultaneously.
 We also assume that GPU computation is non-preemptive.
 
 \textbf{DMA Unit:}

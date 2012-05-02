@@ -5,7 +5,7 @@
 
 We evaluate our Gdev prototype, using the Rodinia
 benchmarks~\cite{Che_IISWC09}, GPU-accelerated eCryptfs encrypted
-filesystem from KGPU~\cite{Sun_SYSTOR12}, FAST database
+file system from KGPU~\cite{Sun_SYSTOR12}, FAST database
 search~\cite{Kim_SIGMOD10}, and some dataflow
 microbenchmarks from PTask~\cite{Rossbach_SOSP11}.
 We disclose that the basic performance of our prototype is practical
@@ -148,22 +148,23 @@ mode'' to boost hardware performance that we do not use for our Gdev
 prototype implementation.
 As observed in the LOOP benchmark result, our Gdev prototype incurs
 about 20\% of decrease in performance compared to the proprietary
-software due to a lock of performance mode.
+software due to a lack of performance mode.
 However, the impact of performance mode is workload dependent.
 If workloads are very compute-intensive, such as the HW and SRAD
-benchmarks, this impact appears clearly, whereas some friendly workloads,
-such as the BFS and HS benchmarks, can hide this impact.
+benchmarks, this impact appears clearly, whereas some friendly
+workloads, such as the BFS and HS benchmarks, are not influenced very
+much.
 In either case, however, this is an implementation issue, but is
 not a conceptual limitation of Gdev.
-These benchmark results also imply that Gdev's runtime-unified OS approach
-is not appreciated by data-intensive workloads.
-For example, the BP benchmark deals with a very large size of data,
+These benchmark results also imply that Gdev's runtime-unified OS
+approach would not be appreciated by data-intensive workloads.
+For example, the BP benchmark is associated with a very large size of data,
 though its compute demand is not very high.
-Such a workload would not perform well with our Gdev prototype, since
-the \texttt{memcpy} implementation in the Linux kernel is slow.
-On the other hand, the PINCPY benchmark shows little difference in
-performance for our Gdev prototype and the proprietary software, since
-it does not need \texttt{memcpy} operations.
+This type of workload would not perform well with our Gdev prototype, since
+the \texttt{memcpy} function of the Linux kernel becomes a bottleneck.
+On the other hand, the PINCPY benchmark does not need \texttt{memcpy}
+operations.
+Hence, performance does not depend on implementations.
 
 \begin{figure}[t]
  \begin{center}
@@ -203,9 +204,9 @@ non-trivial due to many scheduler invocations.
 On the other hand, the OS-space API-driven scheme can reject such command
 submission that is not submitted through the API.
 Gdev and PTask are both API-driven, but PTask exposes the system call to
-user-space pgrams, which could allow misbehaving tasks to abuse GPU
+user-space programs, which could allow misbehaving tasks to abuse GPU
 resources.
-Therefore, Gdev's approach that integrates runtime support into
+This evinces that Gdev's approach that integrates runtime support into
 the OS is a more reliable solution.
 
 \vspace{-0.25em}
@@ -254,7 +255,7 @@ and Gdev's library respectively in the user space.
 ``Gdev'' is our contribution that enables the eCryptfs module to use the
 GPU directly within the OS.
 Due to some page cache effect, read and write are not identical in
-throughput, but an advantage of using the GPU is clearly observed.
+throughput, but an advantage of using the GPU is clearly depicted.
 One may observe that Gdev's runtime-unified OS approach does not really
 outperform KGPU's approach.
 This is not surprising at all, because a magnitude of improvements in
@@ -383,7 +384,7 @@ amount of device memory for other purposes.
 Unlike the user-space runtime approaches, Gdev's runtime-unified OS
 approach can support memory swapping, and all the 128MB-data search
 tasks can survive under this memory pressure.
-However, a reflection point when the slope of increase in the makespan
+However, a reflection point where the slope of increase in the makespan
 changes is different, depending on whether the temporal swap
 space allocated on device memory is used or not.
 When the temporal swap space is not used, the reflection point is

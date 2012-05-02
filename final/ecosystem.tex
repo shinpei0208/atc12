@@ -13,23 +13,21 @@
  \vspace{-1.5em}
 \end{figure}
 
-Gdev aims to enhance GPU resource management, and extend a class
-of applications that can use GPUs.
-To this end, it integrates the major part of runtime support into the OS.
+Gdev aims to (i) enhance GPU resource management and (ii) extend a class
+of applications that can leverage GPUs.
+To this end, we integrate the major portion of runtime support into the OS.
 Figure~\ref{fig:gdev} illustrates the logical view of Gdev's ecosystem.
-We still support a traditional execution model where applications make
-API calls to the complete user-space runtime library, but this is an
-optional path left for compatibility, and the system designer may
-disable it to remove the reliability concern discussed in
+For a compatibility issue, we still support the conventional stack where
+applications make API calls to the user-space runtime library, but
+system designers may disable this stack to remove the concern discussed in
 Section~\ref{sec:introduction}.
-In contrast, Gdev's runtime system resides in the OS, which enables both
-user-space and OS-space applications to use the same runtime API set
-protected by the OS.
-Therefore, non-privileged user-space programs can never bypass the
-runtime system with GPU resource management.
-There is a wrapper library required for user-space applications, but this is a
-tiny piece of software that simply relays API calls to the runtime
-system in the OS.
+A new ecosystem introduced by Gdev is runtime support integrated in
+the OS, allowing the user space as well as the OS to use the identical
+API set.
+This ecosystem prevents non-privileged user-space programs from
+bypassing the runtime system to access GPUs.
+The wrapper library is a small piece of software provided for user-space
+applications, which relays API calls to the runtime system employed in the OS.
 
 Leveraging this ecosystem, we design an API-driven GPU resource
 management scheme.
@@ -47,15 +45,14 @@ On the other hand, Gdev can manage GPU resources along with API calls,
 without any additional programming abstractions.
 
 \textbf{Programming Model:}
-We provide a set of low-level functions called Gdev API for GPU
-programming.
-Gdev API can be a useful backend for high-level APIs, such as CUDA,
-OpenCL, and HMPP.
-The detail of Gdev API can be found at our website~\cite{Gdev}.
-Programmers may use either Gdev API directly or a high-level API built
+We provide a set of low-level functions for GPGPU programming, called
+``Gdev API''.
+Gdev API is a useful backend for high-level APIs, such as CUDA.
+The details of Gdev API can be found at our project website~\cite{Gdev}.
+Programmers may use either Gdev API directly or high-level APIs built
 on top of Gdev API.
-In this paper, we particularly assume that programmers use ``CUDA Driver
-API 4.0''~\cite{CUDA40}.
+This paper particularly assumes that programmers use the well-known CUDA
+Driver API 4.0~\cite{CUDA40}.
 
 Gdev uses an existing programming framework and commodity compiler, such
 as NVIDIA CUDA Compiler (NVCC)~\cite{CUDA40}.

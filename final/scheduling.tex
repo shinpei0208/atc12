@@ -8,7 +8,7 @@ data transmission times for each GPU context based on the given
 scheduling policy.
 Although we make use of some previous
 techniques~\cite{Kato_RTSS11,Kato_ATC11}, Gdev provides a new queuing
-scheme and virtual GPU support for time-sharing systems.
+scheme and virtual GPU support for multi-tasking systems.
 Gdev also propagates the task priority used in the OS to the GPU context.
 
 \vspace{-0.25em}
@@ -18,73 +18,72 @@ Gdev also propagates the task priority used in the OS to the GPU context.
 
 Gdev uses a similar scheme to TimeGraph~\cite{Kato_ATC11} for GPU
 scheduling.
-Specifically, it allows GPU contexts to use GPU resources only if no
+Specifically, it allows GPU contexts to use GPU resources only when no
 other contexts are using the corresponding resources.
-The pending GPU contexts are queued by the scheduler while waiting for
-the current context using the resources.
-To notify the completion of the current context execution, Gdev
+The stalling GPU contexts are queued by the Gdev scheduler while waiting for
+the current context to leave the resources.
+In order to notify the completion of the current context execution, Gdev
 uses additional GPU commands to generate an interrupt from the GPU.
-The highest-priority context is chosen from the queue upon every
-interrupt, and dispatched to the GPU.
-The computation and data transmission times are separately accumulated
-for resource accounting.
-For compute requests, we also allow the same context to launch compute
-instances simultaneously, and the total makespan from the first to the last
-instance is deemed as the computation time.
-PTask~\cite{Rossbach_SOSP11} and RGEM~\cite{Kato_RTSS11} also use
-similar mechanisms, but do not use interrupts, and thereby resource
-accounting is managed by the user space via the API.
+Upon every interrupt, the highest-priority context is dispatched to the
+GPU from the waiting queue.
+Computation and data transmission times are separately accumulated for
+resource accounting.
+For computations, we allow the same context to launch multiple
+compute instances simultaneously, and the total makespan from the first
+to the last instance is deemed as the computation time.
+PTask~\cite{Rossbach_SOSP11} and RGEM~\cite{Kato_RTSS11} also provide
+similar schedulers, but do not use interrupts, and hence resource accounting is
+managed by the user space via the API.
 
-Gdev is API-driven, invoking a scheduler only when \texttt{gmemcpy*} or
-\texttt{glaunch} is called, while TimeGraph is command-driven, invoking
-a scheduler whenever GPU commands are flushed.
+Gdev is API-driven where the scheduler is invoked only when computation or
+data transmission requests are submitted, whereas TimeGraph is
+command-driven, which invokes the scheduler whenever GPU commands are
+flushed.
 In this regard, Gdev is similar to PTask~\cite{Rossbach_SOSP11} and
 RGEM~\cite{Kato_RTSS11}.
-However, Gdev differs even from these prior work in that it supports
-separate queues for resource accounting of compute and memory-copy
-operations, which we call \textit{Multiple Resource Queues} (MRQ), while
-we call \textit{Single Device Queue} (SDQ) for the previous approach
-where the scheduler supports only a single queue per device for resource
-accounting.
+However, Gdev differs from these two approaches in that it can separate
+queues for accounting of computations and data transmissions, which we
+call the \textit{Multiple Resource Queues} (MRQ) scheme.
+On the other hand, what we call the \textit{Single Device Queue} (SDQ)
+scheme uses a single queue per device for accounting.
 
 The MRQ scheme is apparently more efficient than the SDQ scheme, when
-different compute and memory-copy operations can be overlapped.
-Suppose that there are two contexts both requesting 50\% of compute
-and 50\% of memory-copy demands.
-The SDQ scheme considers that the demand of each context is 100\% by
-adding compute and memory-copy demands, and the total demand of the
-two context is 200\%.
-This workload thereby looks overloaded under the SDQ scheme.
+computations and data transmissions can be overlapped.
+Suppose that there are two contexts both requesting 50\% of computation
+and 50\% of data transmission demands.
+The SDQ scheme presumes that the demand of each context is 50 + 50 =
+100\%, implying a total demand of 200\% by the two contexts.
+As a result, this workload looks overloaded under the SDQ scheme.
 The MRQ scheme, on the other hand, does not consider the total workload
-to be overloaded but each resource to be fully utilized.
+to be overloaded due to overlapping but each resource to be fully utilized.
 
-Gdev creates scheduler threads to separately control the resource
-usage of the GPU compute unit and DMA unit.
+Gdev creates two different scheduler threads to control the resource
+usage of the GPU compute unit and DMA unit separately.
 The compute scheduler thread is invoked by GPU interrupts generated upon
 the completion of each GPU compute operation, while the DMA scheduler
-thread is awakened by the Gdev runtime when the memory-copy operation is
+thread is awakened by the Gdev runtime system when the memory-copy operation is
 completed, since we do not use interrupts for memory-copy operations.
 
-\subsection{Virtual GPU}
+\subsection{GPU Virtualization}
 \label{sec:virtual_gpu}
 \vspace{-0.25em}
 
-Gdev provides virtual GPUs, which virtualize a physical GPU into logical
-GPUs to protect a group of GPU users from others.
-Virtual GPUs are activated by specifying the weights of GPU resources
+Gdev is able to virtualize a physical GPU into multiple logical GPUs to
+protect working groups of multi-tasking systems from interference.
+Virtual GPUs are activated by specifying weights of GPU resources
 assigned to each of them.
-We classify GPU resources to the \textit{memory share}, \textit{memory
+GPU resources are classified to \textit{memory share}, \textit{memory
 bandwidth}, and \textit{compute bandwidth}.
-The memory share is the weight of the physical memory available for the
+Memory share is the weight of physical memory available for the
 virtual GPU.
-The memory bandwidth is the amount of time in some period given for
-memory-copy operations related to the GPU, and the compute bandwidth is
-that for GPU compute operations.
-For the memory share, Gdev simply partitions the physical memory.
-For the compute and memory-copy bandwidth, however, we leverage the GPU 
-schedulers to meet their requirements.
-Considering a similar characteristic of non-preemptive compute and
-memory-copy operations, we apply the same policy to both the compute and
+Memory bandwidth is the amount of time in a certain period allocated for
+memory-copy operations using the virtual GPU, while compute
+bandwidth is that for compute operations.
+Regarding memory share, Gdev simply partitions physical memory space.
+Meanwhile, we provide the GPU scheduler to meet the requirements
+of compute and memory-copy bandwidth.
+Considering similar characteristics of non-preemptive computations and
+data transmissions, we apply the same policy to the compute and
 memory-copy schedulers.
 
 The challenge for virtual GPU scheduling is raised by the non-preemptive
@@ -112,7 +111,7 @@ workloads are non-preemptive and bursting.
    {\small \verb|    suspend(ctx);|}\\
    {\small \verb|  dispatch(ctx);|}\\
    {\small \verb|}|}\\
-   {\small \verb|vgpu_object* on_completion(vgpu, ctx) {|}\\
+   {\small \verb|VirtualGPU on_completion(vgpu, ctx) {|}\\
    {\small \verb|  if (vgpu->bgt < 0 && vgpu->utl > vgpu->bw)|}\\
    {\small \verb|    move_to_queue_tail(vgpu);|}\\
    {\small \verb|  next = get_queue_head();|}\\
@@ -137,14 +136,14 @@ algorithm.
 The pseudo-code of the BAND scheduler is shown in
 Figure~\ref{fig:band}.
 The \texttt{on\_arrival} function is called when a GPU context
-(\texttt{ctx}) running on a virtual GPU (\texttt{vgpu}) tries to use GPU
-resources via the \texttt{glaunch} or \texttt{gmemcpy*} functions.
-The context can be dispatched to the GPU, only if no other virtual GPUs
-are accessing the GPU.
+(\texttt{ctx}) running on a virtual GPU (\texttt{vgpu}) attempts to
+access GPU resources for computations or data transmissions.
+The context can be dispatched to the GPU only if no other virtual GPUs
+are using the GPU.
 Otherwise, the corresponding task is suspended.
 The \texttt{on\_completion} function is called by the scheduler thread
-upon the completion of a GPU context (\texttt{ctx}) assigned to a virtual
-GPU (\texttt{vgpu}), in order to select the next virtual GPU to run.
+upon the completion of the context (\texttt{ctx}) assigned to the
+virtual GPU (\texttt{vgpu}), selecting the next virtual GPU to operate.
 
 The BAND scheduler is based on the Credit scheduler, but differs in the
 following two points.
@@ -159,7 +158,7 @@ The second modification to the Credit scheduler is that the BAND
 scheduler waits for a certain amount of time specified by the system
 designer, if the GPU utilization of the virtual GPU selected
 by the scheduler is exceeding its assigned bandwidth.
-This time-buffering approach works for non-preemptive burst workloads.
+This ``time-buffering'' approach works for non-preemptive burst workloads.
 Suppose that the system has two virtual GPUs, both of which run some
 burst-workload GPU contexts, but their non-preemptive execution times
 are different.
