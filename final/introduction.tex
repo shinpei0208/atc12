@@ -3,41 +3,41 @@
 \label{sec:introduction}
 \vspace{-0.25em}
 
-Recent innovations in heterogeneous compute devices with many-core
-technology have achieved an order-of-magnitude gain in computing
-performance. 
-In particular, the graphics processing unit (GPU) receives considerable
-attention as a mature heterogeneous compute device that embraces a
-concept of many-core computing.
-A recent announcement from the TOP500 supercomputing sites in November
-2011~\cite{TOP500} disclosed that three of the top five supercomputers
-use GPUs.
-For example, scientific climate applications can gain 80x speedups using
-such GPU-based supercomputers~\cite{Shimokawabe10}.
-The benefit of GPUs appears not only in high-performance computing but
-also in general-purpose and embedded computing domains.
-According to previous research, GPUs can achieve up to an order of 10x
-speedups for software routers~\cite{Han_SIGCOMM10}, 20x speedups for
-encrypted networks~\cite{Jang_NSDI11}, and 15x speedups for motion
-planning in autonomous vehicles~\cite{McNaughton_ICRA11}.
-Such a rapid growth of general-purpose computing on GPUs,
-\textit{a.k.a.}, GPGPU, is brought by recent advances in GPU
-programming languages, such as CUDA~\cite{CUDA40}.
+Recent advances in many-core technology have achieved an
+order-of-magnitude gain in computing performance.
+Examples include \textit{graphics processing units} (GPUs) -- mature
+compute devices that best embrace a concept of heterogeneous many-core
+computing.
+In fact, TOP500 Supercomputing Sites disclosed in November
+2011~\cite{TOP500} that three of the top five supercomputers employ
+clusters of GPUs as primary computing resources.
+Of particular note is that scientific climate applications have achieved
+80x speedups leveraging GPUs~\cite{Shimokawabe10}.
+Such a continuous series of evidence on performance benefits of GPUs has
+encouraged application domains of GPUs to expand to general-purpose and
+embedded computing.
+For instance, previous work have demonstrated that GPU-accelerated
+systems achieved an order of 10x speedups for software
+routers~\cite{Han_SIGCOMM10}, 20x speedups for encrypted
+networks~\cite{Jang_NSDI11}, and 15x speedups for motion planning~\cite{McNaughton_ICRA11}.
+This rapid growth of general-purpose computing on GPUs,
+\textit{a.k.a.}, GPGPU, is brought by recent advances in programming
+languages, such as CUDA~\cite{CUDA40}.
 
-As these trends show, GPUs are becoming more and more useful for
+Seen from these trends, GPUs are becoming more and more applicable for
 general-purpose systems.
-Nonetheless, system software support for GPUs in today's market is
+However, system software support for GPUs in today's market is
 tailored to accelerate particular applications dedicated to the
-system; it is not well-designed to integrate GPUs into more
-general-purpose multi-tasking systems.
-Although the previous work raised above~\cite{Han_SIGCOMM10,
-Jang_NSDI11, McNaughton_ICRA11} have drawn improvements in performance
-achieved by GPUs, they could never provide performance or
-quality-of-service (QoS) management without system software primitives.
-Given that those networked and embedded systems are typically composed
-of multiple clients and components, it is essential to manage GPUs as
-first-class computing resources so that they can be accessed by multiple
-tasks simultaneously in a reliable manner.
+system; it is not well-designed to integrate GPUs into general-purpose
+\textit{multi-tasking} systems.
+Albeit speedups of individual application programs, the previous
+research raised above~\cite{Han_SIGCOMM10, Jang_NSDI11,
+McNaughton_ICRA11} could not provide performance or quality-of-service
+(QoS) management without system software support.
+Given that networked and embedded systems are essentially composed
+of multiple clients and components, it is essential that GPUs be
+managed as first-class computing resources in order for them to be
+used by multiple tasks concurrently in a reliable manner.
 
 The research community has articulated the needs of enhancement in 
 the operating system (OS)~\cite{Bautin_MCNC08, Kato_ATC11,
@@ -60,7 +60,7 @@ using any user-space runtime libraries, but using an \texttt{ioctl}
 system call directly. 
 This explains that GPUs should be protected by the OS as well as CPUs.
 
-In addition to those conceptual issues, there are more fundamental and
+In addition to those conceptual issues, there exist more fundamental and
 practical issues with publicly-available GPGPU software.
 For example, memory allocation for GPU computing is not allowed to
 exceed the physical capacity of device memory.
@@ -69,21 +69,24 @@ memory resources with other contexts.
 Such data management constraints may not be acceptable in
 general-purpose programming.
 
-We present \textbf{Gdev}, a new approach to GPU resource management that
-addresses the current limitations of GPGPU ecosystems.
+\textbf{Contribution:}
+We present \textbf{Gdev}, a new approach to GPU resource management in
+the OS that
+addresses the current limitations of GPU computing.
 Gdev integrates runtime support for GPUs into the OS, which allows the
-user space as well as the OS itself to use GPUs through the same API
-set, and protects GPUs from non-privileged user-space programs at the OS
-level.
-Under this runtime-unified OS model, Gdev further provides first-class GPU
-resource management primitives for multi-tasking systems.
-More specifically, Gdev allows programmers to share device memory
-resources among GPU contexts explicitly using the API. 
-We also leverage this shared memory scheme to allow GPU contexts to
-allocate memory beyond the physical size of device memory.
-Finally, Gdev supports virtual GPUs to strongly isolate GPU resources
-among working entities.
-As a proof-of-concept, we provide an open-source implementation of Gdev.
+user space as well as the OS itself to use GPUs with the identical API
+set, while protecting GPUs from non-privileged user-space programs at
+the OS level.
+Building on this runtime-unified OS model, Gdev further provides
+first-class GPU resource management schemes for multi-tasking systems.
+Specifically, Gdev allows programmers to share device memory resources
+among GPU contexts using an explicit API.
+We also use this shared memory functionality to enable GPU contexts to
+allocate memory exceeding the physical size of device memory.
+Finally, Gdev is able to virtualize the GPU into multiple logical
+GPUs to enhance an isolation among working groups of multi-tasking
+systems.
+A proof of concept is provided as an open-source implementation of Gdev.
 In summary, this paper makes the following contributions:
 
 \begin{itemize}
